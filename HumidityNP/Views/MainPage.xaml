@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HumidityNP.ViewModels"
+             x:Class="HumidityNP.Views.MainPage"
+             Title="HumidityNP">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <!-- Статус подключения -->
+            <Frame BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Статус подключения" 
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           FontSize="16"/>
+                    <Label Text="{Binding ConnectionStatus}" 
+                           TextColor="White"
+                           FontSize="14"/>
+                    <Button Text="{Binding IsConnected, 
+                                  StringFormat='{0:Подключиться;Отключиться}'}"
+                           Command="{Binding ConnectCommand}"
+                           BackgroundColor="White"
+                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                           FontAttributes="Bold"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Данные измерений -->
+            <Frame BorderColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Последние измерения" 
+                           FontAttributes="Bold"
+                           FontSize="18"/>
+
+                    <Grid ColumnDefinitions="*,2*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Тип измерения:" FontAttributes="Bold"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding MeasurementType}"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Материал:" FontAttributes="Bold"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Material}"/>
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Температура:" FontAttributes="Bold"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Temperature}"/>
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="Влажность:" FontAttributes="Bold"/>
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Humidity}" 
+                               FontSize="20" 
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Лог событий -->
+            <Frame BorderColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Лог событий" 
+                           FontAttributes="Bold"
+                           FontSize="16"/>
+                    <CollectionView ItemsSource="{Binding LogMessages}" 
+                                   HeightRequest="200">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding}" 
+                                       FontSize="11"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                       Margin="0,2"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
