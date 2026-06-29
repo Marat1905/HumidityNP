@@ -8,6 +8,12 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Светлая тема -->
+            <Color x:Key="CardBgLight">#FFFFFF</Color>
+            <!-- Тёмная тема -->
+            <Color x:Key="CardBgDark">#2A2A3A</Color>
+            <!-- (остальные стандартные цвета уже есть в Colors.xaml) -->
         </ResourceDictionary>
     </Application.Resources>
 </Application>

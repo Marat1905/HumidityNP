@@ -1,84 +1,154 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:HumidityNP.ViewModels"
              x:Class="HumidityNP.Views.MainPage"
+             xmlns:local="clr-namespace:HumidityNP"
+             xmlns:converters ="clr-namespace:HumidityNP.Converters"
              Title="HumidityNP">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="20">
+    <ContentPage.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <!-- Стиль для карточек -->
+        <Style x:Key="CardFrame" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="HasShadow" Value="True"/>
+        </Style>
+    </ContentPage.Resources>
 
-            <!-- Статус подключения -->
-            <Frame BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                   CornerRadius="10"
-                   Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Статус подключения" 
-                           FontAttributes="Bold"
-                           TextColor="White"
-                           FontSize="16"/>
-                    <Label Text="{Binding ConnectionStatus}" 
-                           TextColor="White"
-                           FontSize="14"/>
-                    <Button Text="{Binding IsConnected, 
-                                  StringFormat='{0:Подключиться;Отключиться}'}"
-                           Command="{Binding ConnectCommand}"
-                           BackgroundColor="White"
-                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                           FontAttributes="Bold"/>
-                </VerticalStackLayout>
-            </Frame>
+    <!-- Фоновый градиент -->
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="{AppThemeBinding Light=#E3F2FD, Dark=#1A1A2E}" Offset="0" />
+                <GradientStop Color="{AppThemeBinding Light=#BBDEFB, Dark=#16213E}" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
 
-            <!-- Данные измерений -->
-            <Frame BorderColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
-                   CornerRadius="10"
-                   Padding="15">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Последние измерения" 
-                           FontAttributes="Bold"
-                           FontSize="18"/>
+        <ScrollView Padding="16">
+            <VerticalStackLayout Spacing="16">
 
-                    <Grid ColumnDefinitions="*,2*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
-                        <Label Grid.Row="0" Grid.Column="0" Text="Тип измерения:" FontAttributes="Bold"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding MeasurementType}"/>
+                <!-- Заголовок -->
+                <Label Text="HumidityNP" 
+                       FontSize="28" 
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"
+                       HorizontalOptions="Center"
+                       Margin="0,20,0,16"/>
 
-                        <Label Grid.Row="1" Grid.Column="0" Text="Материал:" FontAttributes="Bold"/>
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Material}"/>
+                <!-- Карточка статуса подключения -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Индикатор состояния (кружок) -->
+                            <Ellipse Grid.Column="0" 
+                                     WidthRequest="14" HeightRequest="14"
+                                     VerticalOptions="Center">
+                                <Ellipse.Fill>
+                                    <SolidColorBrush Color="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <Label Grid.Column="1" 
+                                   Text="{Binding ConnectionStatus}" 
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#1A237E, Dark=#E0E0E0}"
+                                   Margin="10,0,0,0"
+                                   VerticalOptions="Center"/>
+                            <Button Grid.Column="2" 
+                                    Text="{Binding IsConnected, StringFormat='{0:ПОДКЛЮЧИТЬСЯ;ОТКЛЮЧИТЬСЯ}'}"
+                                    Command="{Binding ConnectCommand}"
+                                    BackgroundColor="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=button}"
+                                    TextColor="White"
+                                    FontAttributes="Bold"
+                                    CornerRadius="20"
+                                    Padding="16,10"
+                                    VerticalOptions="Center"
+                                    HeightRequest="44">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#D32F2F" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#1976D2" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
 
-                        <Label Grid.Row="2" Grid.Column="0" Text="Температура:" FontAttributes="Bold"/>
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Temperature}"/>
-
-                        <Label Grid.Row="3" Grid.Column="0" Text="Влажность:" FontAttributes="Bold"/>
-                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Humidity}" 
-                               FontSize="20" 
+                <!-- Карточка с измерениями -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="📊 Последние измерения" 
+                               FontSize="18" 
                                FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
-                    </Grid>
-                </VerticalStackLayout>
-            </Frame>
+                               TextColor="{AppThemeBinding Light=#0D47A1, Dark=#90CAF9}"/>
 
-            <!-- Лог событий -->
-            <Frame BorderColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
-                   CornerRadius="10"
-                   Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Лог событий" 
-                           FontAttributes="Bold"
-                           FontSize="16"/>
-                    <CollectionView ItemsSource="{Binding LogMessages}" 
-                                   HeightRequest="200">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Label Text="{Binding}" 
-                                       FontSize="11"
-                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
-                                       Margin="0,2"/>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Frame>
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                            <!-- Тип -->
+                            <Label Grid.Row="0" Grid.Column="0" Text="📐" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Row="0" Grid.Column="1" Text="Тип:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="0" Grid.Column="2" Text="{Binding MeasurementType}" HorizontalOptions="End" VerticalOptions="Center"/>
 
-        </VerticalStackLayout>
-    </ScrollView>
+                            <!-- Материал -->
+                            <Label Grid.Row="1" Grid.Column="0" Text="🧱" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="Материал:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="1" Grid.Column="2" Text="{Binding Material}" HorizontalOptions="End" VerticalOptions="Center"/>
+
+                            <!-- Температура -->
+                            <Label Grid.Row="2" Grid.Column="0" Text="🌡️" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="Температура:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="2" Grid.Column="2" Text="{Binding Temperature}" HorizontalOptions="End" VerticalOptions="Center"/>
+
+                            <!-- Влажность -->
+                            <Label Grid.Row="3" Grid.Column="0" Text="💧" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Row="3" Grid.Column="1" Text="Влажность:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="3" Grid.Column="2" 
+                                   Text="{Binding Humidity}" 
+                                   HorizontalOptions="End" 
+                                   FontSize="22" 
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Карточка лога событий -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📋 Лог событий" 
+                               FontSize="16" 
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#0D47A1, Dark=#90CAF9}"/>
+                        <CollectionView ItemsSource="{Binding LogMessages}" 
+                                        HeightRequest="180"
+                                        Margin="0,4,0,0">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="Auto,*" Padding="0,3">
+                                        <BoxView Grid.Column="0" 
+                                                 WidthRequest="4" HeightRequest="4" 
+                                                 CornerRadius="2"
+                                                 BackgroundColor="{AppThemeBinding Light=#1976D2, Dark=#64B5F6}"
+                                                 VerticalOptions="Center"
+                                                 Margin="0,0,8,0"/>
+                                        <Label Grid.Column="1" 
+                                               Text="{Binding}" 
+                                               FontSize="12"
+                                               TextColor="{AppThemeBinding Light=#333, Dark=#B0BEC5}"
+                                               LineBreakMode="NoWrap"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
