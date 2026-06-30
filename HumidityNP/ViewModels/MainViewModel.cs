@@ -6,106 +6,104 @@ using HumidityNP.Enums;
 using HumidityNP.Models;
 using HumidityNP.Services;
 
-namespace HumidityNP.ViewModels
-{
+namespace HumidityNP.ViewModels;
     public partial class MainViewModel : ObservableObject, IDisposable
+{
+    private readonly IBleService _bleService;
+
+    [ObservableProperty]
+    private string _connectionStatus = "Отключено";
+
+    [ObservableProperty]
+    private bool _isConnected;
+
+    [ObservableProperty]
+    private string _measurementType = "-";
+
+    [ObservableProperty]
+    private string _material = "-";
+
+    [ObservableProperty]
+    private string _temperature = "-";
+
+    [ObservableProperty]
+    private string _humidity = "-";
+
+    public ObservableCollection<string> LogMessages { get; } = new();
+
+    // Внедрение через конструктор
+    public MainViewModel(IBleService bleService)
     {
-        private readonly IBleService _bleService;
+        _bleService = bleService;
+        _bleService.OnStatusChanged += OnStatusChanged;
+        _bleService.OnDataReceived += OnDataReceived;
+    }
 
-        [ObservableProperty]
-        private string _connectionStatus = "Отключено";
-
-        [ObservableProperty]
-        private bool _isConnected;
-
-        [ObservableProperty]
-        private string _measurementType = "-";
-
-        [ObservableProperty]
-        private string _material = "-";
-
-        [ObservableProperty]
-        private string _temperature = "-";
-
-        [ObservableProperty]
-        private string _humidity = "-";
-
-        public ObservableCollection<string> LogMessages { get; } = new();
-
-        // Внедрение через конструктор
-        public MainViewModel(IBleService bleService)
+    private void OnStatusChanged(string status)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            _bleService = bleService;
-            _bleService.OnStatusChanged += OnStatusChanged;
-            _bleService.OnDataReceived += OnDataReceived;
-        }
+            ConnectionStatus = status;
+            IsConnected = _bleService.IsConnected;
+            AddLog(status);
+        });
+    }
 
-        private void OnStatusChanged(string status)
+    private void OnDataReceived(ParsedHumidityData data)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                ConnectionStatus = status;
-                IsConnected = _bleService.IsConnected;
-                AddLog(status);
-            });
-        }
+            MeasurementType = GetMeasurementTypeName(data.Type);
+            Material = data.Material.ToString();
+            Temperature = $"{data.TemperatureC:F1}°C ({data.TemperatureF}°F)";
 
-        private void OnDataReceived(ParsedHumidityData data)
+            string sign = data.Sign == SignType.Less ? "<" :
+                         data.Sign == SignType.Greater ? ">" : "";
+            Humidity = $"{sign}{data.Value:F1}%";
+
+            AddLog($"Данные: {data}");
+        });
+    }
+
+    private string GetMeasurementTypeName(ReadingType type)
+    {
+        return type switch
         {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                MeasurementType = GetMeasurementTypeName(data.Type);
-                Material = data.Material.ToString();
-                Temperature = $"{data.TemperatureC:F1}°C ({data.TemperatureF}°F)";
+            ReadingType.NonInsulatedWood => "Дерево (неизолир.)",
+            ReadingType.InsulatedWood => "Дерево (изолир.)",
+            ReadingType.NonInsulatedDrywall => "Гипсокартон (неизолир.)",
+            ReadingType.InsulatedDrywall => "Гипсокартон (изолир.)",
+            ReadingType.NonInsulatedRef => "Относительное (неизолир.)",
+            ReadingType.InsulatedRef => "Относительное (изолир.)",
+            ReadingType.RHT => "Температура/Влажность",
+            _ => "Неизвестно"
+        };
+    }
 
-                string sign = data.Sign == SignType.Less ? "<" :
-                             data.Sign == SignType.Greater ? ">" : "";
-                Humidity = $"{sign}{data.Value:F1}%";
+    private void AddLog(string message)
+    {
+        LogMessages.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
+        if (LogMessages.Count > 50)
+            LogMessages.RemoveAt(LogMessages.Count - 1);
+    }
 
-                AddLog($"Данные: {data}");
-            });
-        }
-
-        private string GetMeasurementTypeName(ReadingType type)
+    [RelayCommand]
+    private async Task ConnectAsync()
+    {
+        if (IsConnected)
         {
-            return type switch
-            {
-                ReadingType.NonInsulatedWood => "Дерево (неизолир.)",
-                ReadingType.InsulatedWood => "Дерево (изолир.)",
-                ReadingType.NonInsulatedDrywall => "Гипсокартон (неизолир.)",
-                ReadingType.InsulatedDrywall => "Гипсокартон (изолир.)",
-                ReadingType.NonInsulatedRef => "Относительное (неизолир.)",
-                ReadingType.InsulatedRef => "Относительное (изолир.)",
-                ReadingType.RHT => "Температура/Влажность",
-                _ => "Неизвестно"
-            };
+            await _bleService.DisconnectAsync();
         }
-
-        private void AddLog(string message)
+        else
         {
-            LogMessages.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
-            if (LogMessages.Count > 50)
-                LogMessages.RemoveAt(LogMessages.Count - 1);
+            _ = _bleService.StartAutoConnectAsync();
         }
+    }
 
-        [RelayCommand]
-        private async Task ConnectAsync()
-        {
-            if (IsConnected)
-            {
-                await _bleService.DisconnectAsync();
-            }
-            else
-            {
-                _ = _bleService.StartAutoConnectAsync();
-            }
-        }
-
-        public void Dispose()
-        {
-            _bleService.OnStatusChanged -= OnStatusChanged;
-            _bleService.OnDataReceived -= OnDataReceived;
-            _bleService.Dispose();
-        }
+    public void Dispose()
+    {
+        _bleService.OnStatusChanged -= OnStatusChanged;
+        _bleService.OnDataReceived -= OnDataReceived;
+        _bleService.Dispose();
     }
 }
