@@ -1,4 +1,4 @@
-﻿namespace HumidityNP.Models;
+﻿namespace HumidityNP.Enums;
 
 /// <summary>
 /// Идентификатор шкалы измерения (материал/порода).

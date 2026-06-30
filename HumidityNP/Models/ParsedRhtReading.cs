@@ -1,4 +1,6 @@
-﻿namespace HumidityNP.Models;
+﻿using HumidityNP.Enums;
+
+namespace HumidityNP.Models;
 
 /// <summary>
 /// Результат разбора 12-байтного пакета RHT Reading.

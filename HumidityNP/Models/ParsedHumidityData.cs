@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumidityNP.Enums;
+using System;
 
 namespace HumidityNP.Models
 {

@@ -1,4 +1,4 @@
-﻿namespace HumidityNP.Models;
+﻿namespace HumidityNP.Enums;
 
 /// <summary>
 /// Тип знака для значений вне диапазона.
