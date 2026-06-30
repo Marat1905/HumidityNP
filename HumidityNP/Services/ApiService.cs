@@ -9,7 +9,7 @@ namespace HumidityNP.Services;
 /// Сервис получения машин. Сейчас возвращает фейковые данные.
 /// В будущем здесь будет HTTP-запрос к API.
 /// </summary>
-public class VehicleApiService : IVehicleApiService
+public class ApiService : IApiService
 {
     public async Task<List<Vehicle>> GetVehiclesAsync()
     {
@@ -86,5 +86,31 @@ public class VehicleApiService : IVehicleApiService
                 Department = ""
             }
         };
+    }
+
+    public async Task<bool> UploadMeasurementsAsync(List<HumidityMeasurement> measurements)
+    {
+        try
+        {
+            // TODO: Заменить на реальный API-запрос
+            // var json = JsonSerializer.Serialize(measurements);
+            // var content = new StringContent(json, Encoding.UTF8, "application/json");
+            // var response = await _httpClient.PostAsync($"{ApiBaseUrl}/humidity/upload", content);
+            // return response.IsSuccessStatusCode;
+
+            // Фейковая задержка для имитации сети
+            await Task.Delay(1000);
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[API] Выгружено {measurements.Count} замеров (фейк)");
+
+            // Имитация успеха
+            return true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[API] Ошибка выгрузки: {ex.Message}");
+            return false;
+        }
     }
 }
