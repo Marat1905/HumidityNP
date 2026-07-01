@@ -2,12 +2,16 @@
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:HumidityNP.Views"
+       xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
        x:Class="HumidityNP.AppShell">
     <TabBar>
-        <Tab Title="Машины" Icon="car.png">
+        <!-- Иконка "car" из Material Icons -->
+        <Tab Title="Машины" mi:MauiIcon.Value="{mi:Material Icon=DirectionsCar}">
             <ShellContent ContentTemplate="{DataTemplate local:VehiclesPage}" Route="vehicles" />
         </Tab>
-        <Tab Title="Все замеры" Icon="list.png">
+
+        <!-- Иконка "list" из Material Icons -->
+        <Tab Title="Все замеры" mi:MauiIcon.Value="{mi:Material Icon=ListAlt}">
             <ShellContent ContentTemplate="{DataTemplate local:AllMeasurementsPage}" Route="allmeasurements" />
         </Tab>
     </TabBar>

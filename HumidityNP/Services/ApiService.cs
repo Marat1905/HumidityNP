@@ -58,7 +58,7 @@ public class ApiService : IApiService
                 EntryDate = new DateTime(2026, 5, 21, 13, 15, 22),
                 ExitDate = null,
                 Counterparty = "Магнит(Тюмень)",
-                WorkType = "Погрузка",
+                WorkType = "Разгрузка",
                 VehicleBrand = "KAMAZ",
                 VehiclePlate = "А777МР72",
                 Trailer = "КТ88234",
