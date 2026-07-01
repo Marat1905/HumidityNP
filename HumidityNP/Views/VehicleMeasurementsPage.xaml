@@ -7,6 +7,29 @@
              x:Name="page">
     <ContentPage.Resources>
         <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <Style x:Key="CaptureButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="#4CAF50" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="#4CAF50" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="#B0BEC5" />
+                                <Setter Property="Opacity" Value="0.6" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
     </ContentPage.Resources>
 
     <Grid>
@@ -53,7 +76,10 @@
             </Frame>
 
             <HorizontalStackLayout Spacing="10" HorizontalOptions="Fill">
-                <Button Text="Зафиксировать" Command="{Binding CaptureReadingCommand}" BackgroundColor="#4CAF50" TextColor="White" CornerRadius="8" HorizontalOptions="FillAndExpand"/>
+                <Button Text="Зафиксировать" 
+                        Command="{Binding CaptureReadingCommand}" 
+                        Style="{StaticResource CaptureButtonStyle}"
+                        IsEnabled="{Binding CanCapture}" />
                 <Button Text="Вручную" Command="{Binding AddManualMeasurementCommand}" BackgroundColor="#2196F3" TextColor="White" CornerRadius="8" HorizontalOptions="FillAndExpand"/>
             </HorizontalStackLayout>
         </VerticalStackLayout>

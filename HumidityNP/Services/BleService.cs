@@ -25,6 +25,7 @@ namespace HumidityNP.Services
         private bool _disposed;
         private ParsedHumidityData? _lastData;
         private readonly object _lock = new();
+        private readonly Dictionary<Guid, string> _deviceNameCache = new();
 
         // UUID характеристики New Reading (X0 Series Protocol)
         private static readonly Guid ReadingCharacteristicUuid =
@@ -108,13 +109,34 @@ namespace HumidityNP.Services
         private void OnDeviceDiscovered(object sender, DeviceEventArgs e)
         {
             var device = e.Device;
-            if (device.Name != null &&
-                _deviceNamePrefixes.Any(prefix => device.Name.StartsWith(prefix)))
+            string deviceName = device.Name;
+            //Console.WriteLine($"Имя = {device.Name}; UUID = {device.Id}");
+
+            // Если имя пустое, пытаемся получить из кэша
+            if (string.IsNullOrEmpty(deviceName))
             {
-                // Если сканирование активно, устройство не подключено и нет активной попытки подключения – подключаемся
+                if (_deviceNameCache.TryGetValue(device.Id, out string cachedName))
+                {
+                    deviceName = cachedName;
+                }
+                else
+                {
+                    // Если в кэше нет, то игнорируем, так как не знаем, наше ли это устройство
+                    return;
+                }
+            }
+            else
+            {
+                // Сохраняем имя в кэш
+                _deviceNameCache[device.Id] = deviceName;
+            }
+
+            // Проверяем префикс
+            if (_deviceNamePrefixes.Any(prefix => deviceName.StartsWith(prefix)))
+            {
                 if (_isSearching && !IsConnected && !_isConnecting)
                 {
-                    OnStatusChanged?.Invoke($"Найдено устройство: {device.Name}, подключение...");
+                    OnStatusChanged?.Invoke($"Найдено устройство: {deviceName}, подключение...");
                     _scanCts?.Cancel(); // Останавливаем сканирование
                     _ = ConnectToDeviceAsync(device);
                 }
@@ -309,6 +331,7 @@ namespace HumidityNP.Services
             _autoReconnect = false;
             _isSearching = false;
             _isConnecting = false;
+            _deviceNameCache.Clear();
         }
     }
 }

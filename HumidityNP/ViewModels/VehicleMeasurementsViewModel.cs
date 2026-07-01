@@ -50,6 +50,12 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     [ObservableProperty]
     private bool _isRefreshing;
 
+    /// <summary>
+    /// Доступность кнопки "Зафиксировать" – только когда есть подключение и данные.
+    /// </summary>
+    [ObservableProperty]
+    private bool _canCapture;
+
     public string VehicleId
     {
         get => _vehicleId;
@@ -184,7 +190,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             MeasurementType = CurrentMeasurementType,
             Material = CurrentMaterial,
             Sign = CurrentSign,
-            Source = Enums.MeasurementSource.Auto,
+            Source = MeasurementSource.Auto,
             Timestamp = DateTime.Now
         };
 
@@ -234,7 +240,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
                 MeasurementType = "Manual",
                 Material = "Manual",
                 Sign = "None",
-                Source = Enums.MeasurementSource.Manual,
+                Source = MeasurementSource.Manual,
                 Timestamp = DateTime.Now
             };
 
@@ -266,5 +272,25 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     {
         _bleService.OnStatusChanged -= OnStatusChanged;
         _bleService.OnDataReceived -= OnDataReceived;
+    }
+
+    // Реакция на изменение IsConnected
+    partial void OnIsConnectedChanged(bool value)
+    {
+        UpdateCanCapture();
+    }
+
+    // Реакция на изменение IsDataAvailable
+    partial void OnIsDataAvailableChanged(bool value)
+    {
+        UpdateCanCapture();
+    }
+
+    /// <summary>
+    /// Обновляет доступность кнопки фиксации.
+    /// </summary>
+    private void UpdateCanCapture()
+    {
+        CanCapture = IsConnected && IsDataAvailable;
     }
 }
