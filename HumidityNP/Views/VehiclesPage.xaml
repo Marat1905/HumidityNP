@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HumidityNP.Views.VehiclesPage"
+             Title="Список машин">
+    <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+        <CollectionView ItemsSource="{Binding Vehicles}" 
+                        SelectedItem="{Binding SelectedVehicle}" 
+                        SelectionMode="Single">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout>
+                            <Label Text="{Binding DisplayName}" FontAttributes="Bold" FontSize="16"/>
+                            <Label Text="{Binding Summary}" FontSize="14" TextColor="Gray"/>
+                            <Label Text="{Binding Counterparty}" FontSize="12" TextColor="Gray"/>
+                        </VerticalStackLayout>
+                        <Image Grid.Column="1" Source="arrow_right.png" HeightRequest="20" WidthRequest="20" VerticalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

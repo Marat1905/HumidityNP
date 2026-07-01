@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:HumidityNP.Converters"
+             x:Class="HumidityNP.Views.VehicleMeasurementsPage"
+             Title="Замеры"
+             x:Name="page">
+    <ContentPage.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Информация о машине -->
+        <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="5" BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C3A}">
+            <Label Text="{Binding Vehicle.DisplayName}" FontAttributes="Bold" FontSize="18"/>
+            <Label Text="{Binding Vehicle.Summary}" FontSize="14" TextColor="Gray"/>
+            <Label Text="{Binding Vehicle.Counterparty}" FontSize="12" TextColor="Gray"/>
+        </VerticalStackLayout>
+
+        <!-- Управление BLE и отображение текущих данных -->
+        <VerticalStackLayout Grid.Row="1" Padding="10" Spacing="8">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}" VerticalOptions="Center"/>
+                <Label Grid.Column="1" Text="{Binding ConnectionStatus}" Margin="8,0,0,0" VerticalOptions="Center"/>
+                <Button Grid.Column="2" Text="{Binding IsConnected, StringFormat='{0:Подключиться;Отключиться}'}" Command="{Binding ConnectCommand}" BackgroundColor="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=button}" TextColor="White" CornerRadius="20" Padding="12,8" HeightRequest="40"/>
+            </Grid>
+
+            <Frame Padding="10" BorderColor="{AppThemeBinding Light=#CCCCCC, Dark=#444444}" CornerRadius="8">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Данные с датчика" FontAttributes="Bold" FontSize="16"/>
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Влажность:" FontAttributes="Bold"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding CurrentHumidity}" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"/>
+                        <Label Grid.Row="0" Grid.Column="2" Text="{Binding CurrentSign}" FontSize="20" TextColor="Red"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Температура:" FontAttributes="Bold"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding CurrentTemperature}"/>
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Материал:" FontAttributes="Bold"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding CurrentMaterial}"/>
+                        <Label Grid.Row="2" Grid.Column="2" Text="{Binding CurrentMeasurementType}" FontSize="12" TextColor="Gray"/>
+                    </Grid>
+                    <Label Text="{Binding LastDataTime, StringFormat='Обновлено: {0:HH:mm:ss}'}" FontSize="12" TextColor="Gray" IsVisible="{Binding IsDataAvailable}"/>
+                    <Label Text="Нет данных" IsVisible="{Binding IsDataAvailable, Converter={StaticResource InverseBoolConverter}}" FontSize="12" TextColor="Gray"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Fill">
+                <Button Text="Зафиксировать" Command="{Binding CaptureReadingCommand}" BackgroundColor="#4CAF50" TextColor="White" CornerRadius="8" HorizontalOptions="FillAndExpand"/>
+                <Button Text="Вручную" Command="{Binding AddManualMeasurementCommand}" BackgroundColor="#2196F3" TextColor="White" CornerRadius="8" HorizontalOptions="FillAndExpand"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Список сохранённых замеров -->
+        <RefreshView Grid.Row="3" IsRefreshing="{Binding IsRefreshing}" Command="{Binding LoadDataCommand}">
+            <CollectionView ItemsSource="{Binding Measurements}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Удалить" BackgroundColor="Red" Command="{Binding BindingContext.DeleteMeasurementCommand, Source={x:Reference page}}" CommandParameter="{Binding .}"/>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Grid Padding="10" ColumnDefinitions="*,Auto,Auto">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="{Binding DisplayValue}" FontAttributes="Bold" FontSize="16"/>
+                                    <Label Text="{Binding Timestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}" FontSize="12" TextColor="Gray"/>
+                                    <Label Text="{Binding SourceDisplay}" FontSize="12" TextColor="Gray"/>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding TemperatureC, StringFormat='{0:F1}°C'}" FontSize="14" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="{Binding Material}" FontSize="12" VerticalOptions="Center" Margin="10,0,0,0"/>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

@@ -19,9 +19,12 @@ namespace HumidityNP.Services
         private IDevice _connectedDevice;
         private ICharacteristic _readingCharacteristic;
         private CancellationTokenSource _scanCts;
-        private bool _isConnecting;
+        private bool _isSearching;      // true, когда выполняется поиск (сканирование)
+        private bool _isConnecting;     // true, когда идёт подключение к конкретному устройству
         private bool _autoReconnect = true;
         private bool _disposed;
+        private ParsedHumidityData? _lastData;
+        private readonly object _lock = new();
 
         // UUID характеристики New Reading (X0 Series Protocol)
         private static readonly Guid ReadingCharacteristicUuid =
@@ -35,6 +38,8 @@ namespace HumidityNP.Services
         public event Action<string> OnStatusChanged;
 
         public bool IsConnected => _connectedDevice?.State == DeviceState.Connected;
+        public ParsedHumidityData? LastData => _lastData;
+        public bool IsConnecting => _isConnecting;
 
         public BleService()
         {
@@ -47,12 +52,18 @@ namespace HumidityNP.Services
             _adapter.DeviceConnectionLost += OnDeviceConnectionLost;
         }
 
-        private readonly List<IDevice> _discoveredDevices = new();
-
+        /// <summary>
+        /// Запускает непрерывное сканирование до тех пор, пока не будет найдено подходящее устройство
+        /// и не установлено соединение. При обнаружении устройства сразу пытается подключиться.
+        /// </summary>
         public async Task StartAutoConnectAsync()
         {
-            if (_isConnecting) return;
-            _isConnecting = true;
+            lock (_lock)
+            {
+                if (_isSearching || IsConnected) return;
+                _isSearching = true;
+                _autoReconnect = true;
+            }
 
             try
             {
@@ -60,35 +71,37 @@ namespace HumidityNP.Services
                 {
                     OnStatusChanged?.Invoke("Поиск устройства...");
 
-                    _scanCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                    _discoveredDevices.Clear();
+                    // Запускаем сканирование без ограничения по времени
+                    _scanCts = new CancellationTokenSource();
 
                     try
                     {
                         await _adapter.StartScanningForDevicesAsync(
                             cancellationToken: _scanCts.Token);
                     }
-                    catch (TaskCanceledException) { }
-
-                    if (_discoveredDevices.Any())
+                    catch (TaskCanceledException)
                     {
-                        var nearestDevice = _discoveredDevices
-                            .OrderByDescending(d => d.Rssi)
-                            .First();
-
-                        OnStatusChanged?.Invoke($"Подключение к {nearestDevice.Name}...");
-                        await ConnectToDeviceAsync(nearestDevice);
+                        // Сканирование отменено (успешное подключение или Disconnect)
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        OnStatusChanged?.Invoke("Устройства не найдены, повтор через 3 сек...");
+                        OnStatusChanged?.Invoke($"Ошибка сканирования: {ex.Message}");
+                    }
+
+                    // Если вышли из цикла сканирования без подключения, ждём перед повтором
+                    if (!IsConnected && _autoReconnect && !_disposed)
+                    {
+                        OnStatusChanged?.Invoke("Повтор поиска через 3 секунды...");
                         await Task.Delay(3000);
                     }
                 }
             }
             finally
             {
-                _isConnecting = false;
+                lock (_lock)
+                {
+                    _isSearching = false;
+                }
             }
         }
 
@@ -98,15 +111,25 @@ namespace HumidityNP.Services
             if (device.Name != null &&
                 _deviceNamePrefixes.Any(prefix => device.Name.StartsWith(prefix)))
             {
-                if (!_discoveredDevices.Any(d => d.Id == device.Id))
+                // Если сканирование активно, устройство не подключено и нет активной попытки подключения – подключаемся
+                if (_isSearching && !IsConnected && !_isConnecting)
                 {
-                    _discoveredDevices.Add(device);
+                    OnStatusChanged?.Invoke($"Найдено устройство: {device.Name}, подключение...");
+                    _scanCts?.Cancel(); // Останавливаем сканирование
+                    _ = ConnectToDeviceAsync(device);
                 }
             }
         }
 
         private async Task ConnectToDeviceAsync(IDevice device)
         {
+            // Блокируем параллельные попытки подключения
+            lock (_lock)
+            {
+                if (_isConnecting) return;
+                _isConnecting = true;
+            }
+
             try
             {
                 var connectCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
@@ -115,6 +138,18 @@ namespace HumidityNP.Services
             catch (Exception ex)
             {
                 OnStatusChanged?.Invoke($"Ошибка подключения: {ex.Message}");
+                // Если не удалось подключиться, возобновляем поиск (если он ещё не запущен)
+                if (!_isSearching && _autoReconnect && !IsConnected)
+                {
+                    _ = StartAutoConnectAsync();
+                }
+            }
+            finally
+            {
+                lock (_lock)
+                {
+                    _isConnecting = false;
+                }
             }
         }
 
@@ -122,6 +157,9 @@ namespace HumidityNP.Services
         {
             _connectedDevice = e.Device;
             OnStatusChanged?.Invoke("Подключено");
+
+            // Останавливаем сканирование, если оно всё ещё активно
+            _scanCts?.Cancel();
 
             try
             {
@@ -174,6 +212,7 @@ namespace HumidityNP.Services
                 if (e.Characteristic.Value != null && e.Characteristic.Value.Length >= 6)
                 {
                     var parsedData = HumidityParser.Parse(e.Characteristic.Value);
+                    _lastData = parsedData;
                     OnDataReceived?.Invoke(parsedData);
                 }
             }
@@ -192,6 +231,7 @@ namespace HumidityNP.Services
 
                 if (_autoReconnect && !_disposed)
                 {
+                    // Запускаем переподключение
                     _ = StartAutoConnectAsync();
                 }
             }
@@ -213,7 +253,12 @@ namespace HumidityNP.Services
 
         public async Task DisconnectAsync()
         {
-            _autoReconnect = false;
+            lock (_lock)
+            {
+                _autoReconnect = false;
+                _isSearching = false; // Останавливаем поиск
+            }
+
             _scanCts?.Cancel();
 
             if (_connectedDevice != null)
@@ -227,6 +272,7 @@ namespace HumidityNP.Services
 
             await CleanupConnectionAsync();
             OnStatusChanged?.Invoke("Отключено");
+            // Не сбрасываем _lastData, чтобы при следующем подключении показывать последние известные данные
         }
 
         private async Task CleanupConnectionAsync()
@@ -261,6 +307,8 @@ namespace HumidityNP.Services
             _scanCts?.Dispose();
 
             _autoReconnect = false;
+            _isSearching = false;
+            _isConnecting = false;
         }
     }
 }

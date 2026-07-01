@@ -3,5 +3,12 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:HumidityNP.Views"
        x:Class="HumidityNP.AppShell">
-    <ShellContent Title="Замеры" ContentTemplate="{DataTemplate local:MainPage}" Route="main" />
+    <TabBar>
+        <Tab Title="Машины" Icon="car.png">
+            <ShellContent ContentTemplate="{DataTemplate local:VehiclesPage}" Route="vehicles" />
+        </Tab>
+        <Tab Title="Все замеры" Icon="list.png">
+            <ShellContent ContentTemplate="{DataTemplate local:AllMeasurementsPage}" Route="allmeasurements" />
+        </Tab>
+    </TabBar>
 </Shell>

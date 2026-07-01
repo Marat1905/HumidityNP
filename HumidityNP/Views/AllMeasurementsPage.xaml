@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HumidityNP.Views.AllMeasurementsPage"
+             Title="Все замеры"
+             x:Name="page">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row="0" Text="Выгрузить все на сервер" Command="{Binding UploadAllCommand}" BackgroundColor="#4CAF50" TextColor="White" CornerRadius="8" Margin="10" HeightRequest="44"/>
+
+        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Measurements}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Удалить" BackgroundColor="Red" Command="{Binding BindingContext.DeleteMeasurementCommand, Source={x:Reference page}}" CommandParameter="{Binding .}"/>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Grid Padding="10" ColumnDefinitions="*,Auto,Auto">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="{Binding DisplayValue}" FontAttributes="Bold" FontSize="16"/>
+                                    <Label Text="{Binding Timestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}" FontSize="12" TextColor="Gray"/>
+                                    <Label Text="{Binding SourceDisplay}" FontSize="12" TextColor="Gray"/>
+                                    <Label Text="{Binding VehicleId}" FontSize="12" TextColor="Gray" TextDecorations="Underline"/>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding TemperatureC, StringFormat='{0:F1}°C'}" FontSize="14" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="{Binding Material}" FontSize="12" VerticalOptions="Center" Margin="10,0,0,0"/>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>
