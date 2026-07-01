@@ -18,10 +18,18 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // Регистрация в DI-контейнере
+        // === Регистрация сервисов ===
         builder.Services.AddSingleton<IBleService, BleService>();
-        builder.Services.AddSingleton<MainViewModel>();
-        builder.Services.AddTransient<MainPage>();
+        builder.Services.AddSingleton<IApiService, ApiService>();
+        builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
+
+        // === Регистрация ViewModels ===
+        builder.Services.AddSingleton<MainViewModel>();          // для MainPage
+
+
+        // === Регистрация страниц ===
+        builder.Services.AddTransient<AppShell>();                  // корневой Shell
+        builder.Services.AddTransient<MainPage>();                  // страница списка машин
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
