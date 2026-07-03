@@ -251,11 +251,17 @@
                     </Frame>
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
                         <Label Text="Влажность" FontSize="11" TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}" />
-                        <Label Text="{Binding CurrentHumidity}" FontSize="22" FontAttributes="Bold" 
-                               TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
+
+                        <Label FontSize="22" FontAttributes="Bold" VerticalOptions="Center">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding CurrentSign}" TextColor="Red" />
+                                    <Span Text=" " />
+                                    <Span Text="{Binding CurrentHumidity}" TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                     </VerticalStackLayout>
-                    <Label Grid.Column="2" Text="{Binding CurrentSign}" FontSize="22" FontAttributes="Bold" 
-                           TextColor="Red" VerticalOptions="Center" HorizontalOptions="End" />
                 </Grid>
 
                 <!-- ТЕМПЕРАТУРА -->
@@ -284,8 +290,6 @@
 
                 <!-- Тип и время в одну строку -->
                 <Grid Grid.Row="4" ColumnDefinitions="*,*" Margin="38,0,0,0">
-                    <Label Grid.Column="0" Text="{Binding CurrentMeasurementType, StringFormat='Тип: {0}'}"
-                           FontSize="11" TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}" />
                     <Label Grid.Column="1" Text="{Binding LastDataTime, StringFormat='🕐 {0:HH:mm:ss}'}"
                            FontSize="11" TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}" 
                            IsVisible="{Binding IsDataAvailable}" HorizontalOptions="End" />
