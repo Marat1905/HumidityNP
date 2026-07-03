@@ -1,13 +1,19 @@
-﻿using HumidityNP.Views;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace HumidityNP;
+﻿namespace HumidityNP;
 
 public partial class App : Application
 {
-    public App(IServiceProvider serviceProvider)
+    public App()
     {
         InitializeComponent();
-        MainPage = serviceProvider.GetRequiredService<AppShell>();
+
+        // 1. Применяем сохраненную тему при старте (если она была выбрана ранее)
+        if (Preferences.ContainsKey("AppTheme"))
+        {
+            var savedTheme = (AppTheme)Preferences.Get("AppTheme", (int)AppTheme.Unspecified);
+            this.UserAppTheme = savedTheme;
+        }
+
+        // 2. Инициализируем главную страницу
+        MainPage = new AppShell();
     }
 }
