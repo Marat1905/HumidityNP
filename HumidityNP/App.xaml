@@ -1,4 +1,4 @@
-﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:HumidityNP.Converters"
@@ -10,13 +10,43 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Глобальные конвертеры -->
+            <!-- ============================================= -->
+            <!-- Глобальные конвертеры                          -->
+            <!-- ============================================= -->
             <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
 
-            <!-- Светлая / тёмная тема для карточек -->
+            <!-- ============================================= -->
+            <!-- Цвета для светлой / тёмной темы                -->
+            <!-- ============================================= -->
+
+            <!-- Фон карточек -->
             <Color x:Key="CardBgLight">#FFFFFF</Color>
-            <Color x:Key="CardBgDark">#2A2A3A</Color>
+            <Color x:Key="CardBgDark">#1E1E2E</Color>
+
+            <!-- Акцентные цвета -->
+            <Color x:Key="PrimaryLight">#1976D2</Color>
+            <Color x:Key="PrimaryDark">#42A5F5</Color>
+
+            <Color x:Key="SuccessLight">#43A047</Color>
+            <Color x:Key="SuccessDark">#66BB6A</Color>
+
+            <Color x:Key="DangerLight">#E53935</Color>
+            <Color x:Key="DangerDark">#EF5350</Color>
+
+            <Color x:Key="WarningLight">#FB8C00</Color>
+            <Color x:Key="WarningDark">#FFA726</Color>
+
+            <!-- Цвета текста -->
+            <Color x:Key="TextPrimaryLight">#212121</Color>
+            <Color x:Key="TextPrimaryDark">#ECEFF1</Color>
+
+            <Color x:Key="TextSecondaryLight">#546E7A</Color>
+            <Color x:Key="TextSecondaryDark">#90A4AE</Color>
+
+            <!-- Цвета фона страницы -->
+            <Color x:Key="PageBgLight">#F5F7FA</Color>
+            <Color x:Key="PageBgDark">#0D1117</Color>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

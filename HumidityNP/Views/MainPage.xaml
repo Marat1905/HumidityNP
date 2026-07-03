@@ -3,19 +3,32 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HumidityNP.Views.MainPage"
              xmlns:local="clr-namespace:HumidityNP"
-             xmlns:converters ="clr-namespace:HumidityNP.Converters"
-             Title="HumidityNP">
+             xmlns:converters="clr-namespace:HumidityNP.Converters"
+             Title="🏠 Главная">
 
+    <!-- Ресурсы страницы: конвертеры и стили -->
     <ContentPage.Resources>
-        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
-        <!-- Стиль для карточек -->
-        <Style x:Key="CardFrame" TargetType="Frame">
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="HasShadow" Value="True"/>
-        </Style>
+        <ResourceDictionary>
+            <!-- Конвертер булево → цвет (для индикатора подключения) -->
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+
+            <!-- Стиль для основных карточек на странице -->
+            <Style x:Key="CardFrame" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="Padding" Value="16" />
+                <Setter Property="Margin" Value="0,0,0,12" />
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BorderColor" Value="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" />
+            </Style>
+
+            <!-- Стиль для заголовков секций внутри карточек -->
+            <Style x:Key="SectionHeader" TargetType="Label">
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light=#0D47A1, Dark=#90CAF9}" />
+            </Style>
+        </ResourceDictionary>
     </ContentPage.Resources>
 
     <!-- Фоновый градиент -->
@@ -30,123 +43,253 @@
         <ScrollView Padding="16">
             <VerticalStackLayout Spacing="16">
 
-                <!-- Заголовок -->
-                <Label Text="HumidityNP" 
-                       FontSize="28" 
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"
-                       HorizontalOptions="Center"
-                       Margin="0,20,0,16"/>
+                <!-- ============================================ -->
+                <!-- ЗАГОЛОВОК ПРИЛОЖЕНИЯ                         -->
+                <!-- ============================================ -->
+                <VerticalStackLayout Spacing="4" Margin="0,20,0,16" HorizontalOptions="Center">
+                    <Label Text="💧 HumidityNP"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Контроль влажности материалов"
+                           FontSize="13"
+                           TextColor="{AppThemeBinding Light=#42A5F5, Dark=#78909C}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
 
-                <!-- Карточка статуса подключения -->
+                <!-- ============================================ -->
+                <!-- КАРТОЧКА СТАТУСА ПОДКЛЮЧЕНИЯ                 -->
+                <!-- ============================================ -->
                 <Frame Style="{StaticResource CardFrame}">
                     <VerticalStackLayout Spacing="12">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <!-- Индикатор состояния (кружок) -->
-                            <Ellipse Grid.Column="0" 
-                                     WidthRequest="14" HeightRequest="14"
-                                     VerticalOptions="Center">
-                                <Ellipse.Fill>
-                                    <SolidColorBrush Color="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"/>
-                                </Ellipse.Fill>
-                            </Ellipse>
-                            <Label Grid.Column="1" 
-                                   Text="{Binding ConnectionStatus}" 
-                                   FontSize="16"
+
+                        <!-- Заголовок секции -->
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="📶" FontSize="18" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Подключение" Style="{StaticResource SectionHeader}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- Разделитель -->
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" Margin="0,4" />
+
+                        <!-- Строка статуса -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+
+                            <!-- Индикатор состояния (двойной кружок с эффектом свечения) -->
+                            <Grid Grid.Column="0" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                <!-- Внешнее свечение -->
+                                <Ellipse WidthRequest="20" HeightRequest="20"
+                                         Fill="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
+                                         Opacity="0.25" />
+                                <!-- Внутренний кружок -->
+                                <Ellipse WidthRequest="12" HeightRequest="12"
+                                         Fill="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+
+                            <!-- Текст статуса -->
+                            <Label Grid.Column="1"
+                                   Text="{Binding ConnectionStatus}"
+                                   FontSize="15"
                                    FontAttributes="Bold"
                                    TextColor="{AppThemeBinding Light=#1A237E, Dark=#E0E0E0}"
-                                   Margin="10,0,0,0"
-                                   VerticalOptions="Center"/>
-                            <Button Grid.Column="2" 
-                                    Text="{Binding IsConnected, StringFormat='{0:ПОДКЛЮЧИТЬСЯ;ОТКЛЮЧИТЬСЯ}'}"
+                                   VerticalOptions="Center" />
+
+                            <!-- Кнопка подключения/отключения -->
+                            <Button Grid.Column="2"
+                                    Text="{Binding IsConnected, StringFormat='{0:🔌 Подключить;⚡ Отключить}'}"
                                     Command="{Binding ConnectCommand}"
-                                    BackgroundColor="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=button}"
                                     TextColor="White"
                                     FontAttributes="Bold"
+                                    FontSize="13"
                                     CornerRadius="20"
-                                    Padding="16,10"
-                                    VerticalOptions="Center"
-                                    HeightRequest="44">
-                                <Button.Triggers>
-                                    <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="True">
-                                        <Setter Property="BackgroundColor" Value="#D32F2F" />
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="False">
-                                        <Setter Property="BackgroundColor" Value="#1976D2" />
-                                    </DataTrigger>
-                                </Button.Triggers>
+                                    Padding="16,8"
+                                    HeightRequest="40"
+                                    VerticalOptions="Center">
+                                <Button.BackgroundColor>
+                                    <Binding Path="IsConnected" Converter="{StaticResource BoolToColorConverter}" ConverterParameter="button" />
+                                </Button.BackgroundColor>
                             </Button>
                         </Grid>
                     </VerticalStackLayout>
                 </Frame>
 
-                <!-- Карточка с измерениями -->
+                <!-- ============================================ -->
+                <!-- КАРТОЧКА ПОСЛЕДНИХ ИЗМЕРЕНИЙ                 -->
+                <!-- ============================================ -->
                 <Frame Style="{StaticResource CardFrame}">
                     <VerticalStackLayout Spacing="12">
-                        <Label Text="📊 Последние измерения" 
-                               FontSize="18" 
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#0D47A1, Dark=#90CAF9}"/>
 
-                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
-                            <!-- Тип -->
-                            <Label Grid.Row="0" Grid.Column="0" Text="📐" FontSize="18" VerticalOptions="Center"/>
-                            <Label Grid.Row="0" Grid.Column="1" Text="Тип:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
-                            <Label Grid.Row="0" Grid.Column="2" Text="{Binding MeasurementType}" HorizontalOptions="End" VerticalOptions="Center"/>
+                        <!-- Заголовок секции -->
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="📊" FontSize="18" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Последние измерения" Style="{StaticResource SectionHeader}" VerticalOptions="Center" />
+                        </Grid>
 
-                            <!-- Материал -->
-                            <Label Grid.Row="1" Grid.Column="0" Text="🧱" FontSize="18" VerticalOptions="Center"/>
-                            <Label Grid.Row="1" Grid.Column="1" Text="Материал:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
-                            <Label Grid.Row="1" Grid.Column="2" Text="{Binding Material}" HorizontalOptions="End" VerticalOptions="Center"/>
+                        <!-- Разделитель -->
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" Margin="0,4" />
 
-                            <!-- Температура -->
-                            <Label Grid.Row="2" Grid.Column="0" Text="🌡️" FontSize="18" VerticalOptions="Center"/>
-                            <Label Grid.Row="2" Grid.Column="1" Text="Температура:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
-                            <Label Grid.Row="2" Grid.Column="2" Text="{Binding Temperature}" HorizontalOptions="End" VerticalOptions="Center"/>
+                        <!-- Сетка измерений с иконками -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="10">
 
-                            <!-- Влажность -->
-                            <Label Grid.Row="3" Grid.Column="0" Text="💧" FontSize="18" VerticalOptions="Center"/>
-                            <Label Grid.Row="3" Grid.Column="1" Text="Влажность:" FontAttributes="Bold" Margin="8,0,0,0" VerticalOptions="Center"/>
-                            <Label Grid.Row="3" Grid.Column="2" 
-                                   Text="{Binding Humidity}" 
-                                   HorizontalOptions="End" 
-                                   FontSize="22" 
+                            <!-- ======= ТИП ИЗМЕРЕНИЯ ======= -->
+                            <!-- Иконка -->
+                            <Frame Grid.Row="0" Grid.Column="0"
+                                   WidthRequest="36" HeightRequest="36"
+                                   CornerRadius="18"
+                                   BackgroundColor="{AppThemeBinding Light=#E8EAF6, Dark=#283593}"
+                                   HasShadow="False" Padding="0" VerticalOptions="Center">
+                                <Label Text="📐" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                            <!-- Подпись -->
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="Тип измерения"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}"
+                                   VerticalOptions="Center" />
+                            <!-- Значение -->
+                            <Label Grid.Row="0" Grid.Column="2"
+                                   Text="{Binding MeasurementType}"
+                                   FontSize="14"
                                    FontAttributes="Bold"
-                                   TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"/>
+                                   TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center" />
+
+                            <!-- ======= МАТЕРИАЛ ======= -->
+                            <!-- Иконка -->
+                            <Frame Grid.Row="1" Grid.Column="0"
+                                   WidthRequest="36" HeightRequest="36"
+                                   CornerRadius="18"
+                                   BackgroundColor="{AppThemeBinding Light=#E8F5E9, Dark=#1B5E20}"
+                                   HasShadow="False" Padding="0" VerticalOptions="Center">
+                                <Label Text="🧱" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                            <!-- Подпись -->
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Text="Материал"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}"
+                                   VerticalOptions="Center" />
+                            <!-- Значение -->
+                            <Label Grid.Row="1" Grid.Column="2"
+                                   Text="{Binding Material}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center" />
+
+                            <!-- ======= ТЕМПЕРАТУРА ======= -->
+                            <!-- Иконка -->
+                            <Frame Grid.Row="2" Grid.Column="0"
+                                   WidthRequest="36" HeightRequest="36"
+                                   CornerRadius="18"
+                                   BackgroundColor="{AppThemeBinding Light=#FFF3E0, Dark=#4E342E}"
+                                   HasShadow="False" Padding="0" VerticalOptions="Center">
+                                <Label Text="🌡️" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                            <!-- Подпись -->
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Text="Температура"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}"
+                                   VerticalOptions="Center" />
+                            <!-- Значение -->
+                            <Label Grid.Row="2" Grid.Column="2"
+                                   Text="{Binding Temperature}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#E65100, Dark=#FFB74D}"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center" />
+
+                            <!-- ======= ВЛАЖНОСТЬ (главный показатель) ======= -->
+                            <!-- Иконка -->
+                            <Frame Grid.Row="3" Grid.Column="0"
+                                   WidthRequest="44" HeightRequest="44"
+                                   CornerRadius="22"
+                                   BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#0D47A1}"
+                                   HasShadow="False" Padding="0" VerticalOptions="Center">
+                                <Label Text="💧" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                            <!-- Подпись -->
+                            <Label Grid.Row="3" Grid.Column="1"
+                                   Text="Влажность"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}"
+                                   VerticalOptions="Center" />
+                            <!-- Значение (крупное, выделенное) -->
+                            <Label Grid.Row="3" Grid.Column="2"
+                                   Text="{Binding Humidity}"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center"
+                                   FontSize="24"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
                         </Grid>
                     </VerticalStackLayout>
                 </Frame>
 
-                <!-- Карточка лога событий -->
+                <!-- ============================================ -->
+                <!-- КАРТОЧКА ЛОГА СОБЫТИЙ                        -->
+                <!-- ============================================ -->
                 <Frame Style="{StaticResource CardFrame}">
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="📋 Лог событий" 
-                               FontSize="16" 
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#0D47A1, Dark=#90CAF9}"/>
-                        <CollectionView ItemsSource="{Binding LogMessages}" 
-                                        HeightRequest="180"
+
+                        <!-- Заголовок секции -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="📋" FontSize="18" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Лог событий" Style="{StaticResource SectionHeader}" VerticalOptions="Center" />
+                            <!-- Счётчик сообщений -->
+                            <Frame Grid.Column="2"
+                                   BackgroundColor="{AppThemeBinding Light=#E8EAF6, Dark=#303F9F}"
+                                   CornerRadius="10"
+                                   Padding="6,2"
+                                   HasShadow="False"
+                                   VerticalOptions="Center">
+                                <Label Text="{Binding LogMessages.Count, StringFormat='{0}'}"
+                                       TextColor="{AppThemeBinding Light=#1A237E, Dark=#90CAF9}"
+                                       FontSize="11"
+                                       FontAttributes="Bold" />
+                            </Frame>
+                        </Grid>
+
+                        <!-- Разделитель -->
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" Margin="0,4" />
+
+                        <!-- Список логов -->
+                        <CollectionView ItemsSource="{Binding LogMessages}"
+                                        HeightRequest="200"
                                         Margin="0,4,0,0">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="Auto,*" Padding="0,3">
-                                        <BoxView Grid.Column="0" 
-                                                 WidthRequest="4" HeightRequest="4" 
-                                                 CornerRadius="2"
+                                    <Grid ColumnDefinitions="Auto,*" Padding="0,4" ColumnSpacing="8">
+                                        <!-- Точка-маркер -->
+                                        <BoxView Grid.Column="0"
+                                                 WidthRequest="6" HeightRequest="6"
+                                                 CornerRadius="3"
                                                  BackgroundColor="{AppThemeBinding Light=#1976D2, Dark=#64B5F6}"
                                                  VerticalOptions="Center"
-                                                 Margin="0,0,8,0"/>
-                                        <Label Grid.Column="1" 
-                                               Text="{Binding}" 
+                                                 Margin="0,0,4,0" />
+                                        <!-- Текст сообщения -->
+                                        <Label Grid.Column="1"
+                                               Text="{Binding}"
                                                FontSize="12"
-                                               TextColor="{AppThemeBinding Light=#333, Dark=#B0BEC5}"
-                                               LineBreakMode="NoWrap"/>
+                                               TextColor="{AppThemeBinding Light=#333333, Dark=#B0BEC5}"
+                                               LineBreakMode="WordWrap" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
                     </VerticalStackLayout>
                 </Frame>
+
+                <!-- Нижний отступ -->
+                <BoxView HeightRequest="20" />
 
             </VerticalStackLayout>
         </ScrollView>
