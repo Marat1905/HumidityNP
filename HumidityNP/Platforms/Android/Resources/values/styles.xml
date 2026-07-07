@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <!-- Базовый стиль приложения -->
+  <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"></style>
+
+  <!-- Наш прозрачный сплэш -->
+  <style name="MyTransparentSplash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <item name="android:windowIsTranslucent">true</item>
+    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowContentOverlay">@null</item>
+    <!-- Для Android 12+ скрываем иконку -->
+    <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+    <item name="android:windowSplashScreenAnimationDuration">0</item>
+  </style>
+</resources>

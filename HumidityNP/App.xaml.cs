@@ -13,7 +13,7 @@ public partial class App : Application
             this.UserAppTheme = savedTheme;
         }
 
-        // 2. Инициализируем главную страницу
-        MainPage = new AppShell();
+        // 2. Показываем анимированную заставку, затем переходим к основному приложению
+        MainPage = new Views.SplashScreen();
     }
 }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             x:Class="HumidityNP.Views.SplashScreen"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False">
+
+    <!-- Фоновый градиент -->
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="{AppThemeBinding Light=#E3F2FD, Dark=#1A1A2E}" Offset="0" />
+                <GradientStop Color="{AppThemeBinding Light=#BBDEFB, Dark=#16213E}" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <VerticalStackLayout VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="20">
+
+            <!-- Lottie-анимация из файла NP.json -->
+            <skia:SKLottieView
+                x:Name="LottieAnimation"
+                Source="NP.json"
+                WidthRequest="250"
+                HeightRequest="250"
+                RepeatCount="-1"
+                HorizontalOptions="Center" />
+
+            <!-- Название приложения -->
+            <Label Text="💧 HumidityNP"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"
+                   HorizontalOptions="Center" />
+
+            <!-- Подзаголовок -->
+            <Label Text="Контроль влажности материалов"
+                   FontSize="14"
+                   TextColor="{AppThemeBinding Light=#42A5F5, Dark=#78909C}"
+                   HorizontalOptions="Center" />
+
+            <!-- Индикатор загрузки -->
+            <ActivityIndicator IsRunning="True"
+                               Color="{AppThemeBinding Light=#1976D2, Dark=#42A5F5}"
+                               HorizontalOptions="Center"
+                               Margin="0,20,0,0" />
+
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

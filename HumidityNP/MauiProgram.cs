@@ -3,6 +3,7 @@ using HumidityNP.ViewModels;
 using HumidityNP.Views;
 using MauiIcons.Material;
 using Microsoft.Extensions.Logging;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace HumidityNP;
 
@@ -13,6 +14,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseSkiaSharp()
             .UseMaterialMauiIcons()
             .ConfigureFonts(fonts =>
             {
@@ -32,6 +34,7 @@ public static class MauiProgram
 
         // Страницы
         builder.Services.AddTransient<AppShell>();
+        builder.Services.AddTransient<SplashScreen>();
         builder.Services.AddTransient<VehiclesPage>();
         builder.Services.AddTransient<VehicleMeasurementsPage>();
         builder.Services.AddTransient<AllMeasurementsPage>();
