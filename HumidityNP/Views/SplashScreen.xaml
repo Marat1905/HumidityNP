@@ -36,7 +36,7 @@
                    HorizontalOptions="Center" />
 
             <!-- Подзаголовок -->
-            <Label Text="Контроль влажности материалов"
+            <Label Text="Контроль влажности макулатуры"
                    FontSize="14"
                    TextColor="{AppThemeBinding Light=#42A5F5, Dark=#78909C}"
                    HorizontalOptions="Center" />
