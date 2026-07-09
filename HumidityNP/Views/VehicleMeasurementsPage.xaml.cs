@@ -38,12 +38,29 @@ public partial class VehicleMeasurementsPage : ContentPage
     }
 
     /// <summary>
-    /// Вызывается при уходе со страницы.
-    /// Освобождает ресурсы ViewModel (отписывается от событий BLE).
+    /// Вызывается при появлении страницы (в том числе при возврате на неё).
+    /// Подписываем ViewModel на события BLE-сервиса, чтобы получать актуальные данные с прибора.
+    /// </summary>
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        // Подписываемся на события BLE при каждом появлении страницы.
+        // Внутри метода есть защита от повторной подписки.
+        _viewModel.SubscribeToBleEvents();
+    }
+
+    /// <summary>
+    /// Вызывается при уходе со страницы (например, при переключении на другую вкладку).
+    /// Отписываемся от событий BLE, чтобы не получать обновления, пока страница не видна.
+    /// ВАЖНО: НЕ вызываем Dispose(), чтобы при возврате на страницу можно было снова подписаться.
     /// </summary>
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        _viewModel.Dispose();
+
+        // Только отписываемся от событий, но не уничтожаем ViewModel.
+        // Это позволяет при возврате на страницу заново подписаться через OnAppearing().
+        _viewModel.UnsubscribeFromBleEvents();
     }
 }

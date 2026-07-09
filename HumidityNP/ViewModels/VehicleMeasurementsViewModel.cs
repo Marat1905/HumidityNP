@@ -14,6 +14,12 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     private readonly ILocalStorageService _localStorage;
     private string _vehicleId;
 
+    // Флаг, чтобы не подписываться повторно, если уже подписаны
+    private bool _isSubscribedToBle;
+
+    // Флаг, что ViewModel была окончательно уничтожена (Dispose)
+    private bool _isDisposed;
+
     [ObservableProperty]
     private Vehicle _vehicle;
 
@@ -86,11 +92,71 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
         ConnectCommand = new AsyncRelayCommand(ConnectAsync);
         CaptureReadingCommand = new AsyncRelayCommand(CaptureReadingAsync);
 
+        // Подписку на события BLE вынесли из конструктора в отдельный метод,
+        // чтобы можно было подписываться/отписываться при появлении/исчезновении страницы.
+        // Подписка будет выполнена в OnAppearing() страницы.
+
+        // Автоматическое подключение при создании VM (если ещё не подключены)
+        _ = InitializeBleAsync();
+    }
+
+    /// <summary>
+    /// Подписка на события BLE-сервиса.
+    /// Вызывается при появлении страницы (OnAppearing).
+    /// Повторный вызов безопасен — внутри есть защита от двойной подписки.
+    /// </summary>
+    public void SubscribeToBleEvents()
+    {
+        if (_isDisposed || _isSubscribedToBle) return;
+
         _bleService.OnStatusChanged += OnStatusChanged;
         _bleService.OnDataReceived += OnDataReceived;
+        _isSubscribedToBle = true;
 
-        // Автоматическое подключение при создании VM
-        _ = InitializeBleAsync();
+        // Сразу синхронизируем текущее состояние подключения,
+        // чтобы UI отражал актуальный статус после возврата на страницу.
+        SyncConnectionState();
+    }
+
+    /// <summary>
+    /// Отписка от событий BLE-сервиса.
+    /// Вызывается при исчезновении страницы (OnDisappearing).
+    /// Не уничтожает ViewModel, только прекращает получение обновлений.
+    /// </summary>
+    public void UnsubscribeFromBleEvents()
+    {
+        if (!_isSubscribedToBle) return;
+
+        _bleService.OnStatusChanged -= OnStatusChanged;
+        _bleService.OnDataReceived -= OnDataReceived;
+        _isSubscribedToBle = false;
+    }
+
+    /// <summary>
+    /// Синхронизирует UI с текущим состоянием BLE-сервиса.
+    /// Нужно, чтобы при возврате на страницу сразу отображался актуальный статус
+    /// и последние известные данные, а не «висело» старое состояние.
+    /// </summary>
+    private void SyncConnectionState()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            IsConnected = _bleService.IsConnected;
+
+            if (_bleService.IsConnected)
+            {
+                ConnectionStatus = "Подключено";
+                UpdateUiFromLastData();
+            }
+            else if (_bleService.IsConnecting)
+            {
+                ConnectionStatus = "Подключение...";
+            }
+            else
+            {
+                ConnectionStatus = "Отключено";
+            }
+        });
     }
 
     private void OnStatusChanged(string status)
@@ -270,8 +336,11 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
 
     public void Dispose()
     {
-        _bleService.OnStatusChanged -= OnStatusChanged;
-        _bleService.OnDataReceived -= OnDataReceived;
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        // При полном уничтожении — отписываемся от событий BLE
+        UnsubscribeFromBleEvents();
     }
 
     // Реакция на изменение IsConnected
