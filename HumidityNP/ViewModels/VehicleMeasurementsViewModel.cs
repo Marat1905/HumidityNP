@@ -3,7 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using HumidityNP.Enums;
 using HumidityNP.Models;
 using HumidityNP.Services;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace HumidityNP.ViewModels;
@@ -51,7 +54,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     private string _currentSign = "";
 
     [ObservableProperty]
-    private DateTime? _lastDataTime;
+    private DateTimeOffset? _lastDataTime;
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -95,7 +98,6 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
         // Подписку на события BLE вынесли из конструктора в отдельный метод,
         // чтобы можно было подписываться/отписываться при появлении/исчезновении страницы.
         // Подписка будет выполнена в OnAppearing() страницы.
-
         // Автоматическое подключение при создании VM (если ещё не подключены)
         _ = InitializeBleAsync();
     }
@@ -183,7 +185,8 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             CurrentMaterial = data.Material.ToString();
             CurrentMeasurementType = data.Type.ToString();
             CurrentSign = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
-            LastDataTime = DateTime.Now;
+
+            LastDataTime = DateTimeOffset.Now;
             IsDataAvailable = true;
         });
     }
@@ -198,7 +201,8 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             CurrentMaterial = data.Material.ToString();
             CurrentMeasurementType = data.Type.ToString();
             CurrentSign = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
-            LastDataTime = DateTime.Now;
+
+            LastDataTime = DateTimeOffset.Now;
             IsDataAvailable = true;
         }
     }
@@ -242,6 +246,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             await Shell.Current.DisplayAlert("Ошибка", "Не удалось распознать влажность", "OK");
             return;
         }
+
         if (!double.TryParse(CurrentTemperature.Replace("°C", ""), out temperature))
         {
             // Если не получается, ставим 0
@@ -257,7 +262,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             Material = CurrentMaterial,
             Sign = CurrentSign,
             Source = MeasurementSource.Auto,
-            Timestamp = DateTime.Now
+            Timestamp = DateTimeOffset.Now
         };
 
         await _localStorage.SaveMeasurementAsync(measurement);
@@ -279,7 +284,9 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
 
             // Замеры
             var measurements = await _localStorage.GetMeasurementsByVehicleAsync(VehicleId);
+
             Measurements.Clear();
+
             foreach (var m in measurements.OrderByDescending(m => m.Timestamp))
                 Measurements.Add(m);
         }
@@ -307,7 +314,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
                 Material = "Manual",
                 Sign = "None",
                 Source = MeasurementSource.Manual,
-                Timestamp = DateTime.Now
+                Timestamp = DateTimeOffset.Now
             };
 
             await _localStorage.SaveMeasurementAsync(measurement);
@@ -318,7 +325,9 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     private async Task DeleteMeasurementAsync(HumidityMeasurement measurement)
     {
         if (measurement == null) return;
+
         bool confirm = await Shell.Current.DisplayAlert("Удаление", $"Удалить замер от {measurement.Timestamp}?", "Да", "Нет");
+
         if (confirm)
         {
             await _localStorage.DeleteMeasurementAsync(measurement.LocalId);

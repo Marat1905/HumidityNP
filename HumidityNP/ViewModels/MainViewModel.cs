@@ -7,7 +7,8 @@ using HumidityNP.Models;
 using HumidityNP.Services;
 
 namespace HumidityNP.ViewModels;
-    public partial class MainViewModel : ObservableObject, IDisposable
+
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IBleService _bleService;
 
@@ -82,7 +83,7 @@ namespace HumidityNP.ViewModels;
 
     private void AddLog(string message)
     {
-        LogMessages.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
+        LogMessages.Insert(0, $"[{DateTimeOffset.Now:HH:mm:ss}] {message}");
         if (LogMessages.Count > 50)
             LogMessages.RemoveAt(LogMessages.Count - 1);
     }

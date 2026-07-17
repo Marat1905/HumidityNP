@@ -113,12 +113,12 @@ public class ApiService : IApiService
         {
             new Vehicle
             {
-                Id = "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                Id = "v1",
                 Number = "Я-9310099848",
-                Date = new DateTime(2026, 5, 21, 15, 17, 40),
-                ArrivalDate = new DateTime(2026, 5, 21, 10, 47, 38),
-                EntryDate = new DateTime(2026, 5, 21, 11, 41, 19),
-                ExitDate = new DateTime(2026, 5, 21, 15, 31, 55),
+                Date = new DateTimeOffset(2026, 5, 21, 15, 17, 40, TimeSpan.Zero),
+                ArrivalDate = new DateTimeOffset(2026, 5, 21, 10, 47, 38, TimeSpan.Zero),
+                EntryDate = new DateTimeOffset(2026, 5, 21, 11, 41, 19, TimeSpan.Zero),
+                ExitDate = new DateTimeOffset(2026, 5, 21, 15, 31, 55, TimeSpan.Zero),
                 Counterparty = "Тандер(Сургут)",
                 WorkType = "Разгрузка",
                 VehicleBrand = "FAW",
@@ -131,11 +131,11 @@ public class ApiService : IApiService
             },
             new Vehicle
             {
-                Id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+                Id = "v2",
                 Number = "Я-9310099849",
-                Date = new DateTime(2026, 5, 21, 16, 5, 10),
-                ArrivalDate = new DateTime(2026, 5, 21, 12, 30, 0),
-                EntryDate = new DateTime(2026, 5, 21, 13, 15, 22),
+                Date = new DateTimeOffset(2026, 5, 21, 16, 5, 10, TimeSpan.Zero),
+                ArrivalDate = new DateTimeOffset(2026, 5, 21, 12, 30, 0, TimeSpan.Zero),
+                EntryDate = new DateTimeOffset(2026, 5, 21, 13, 15, 22, TimeSpan.Zero),
                 ExitDate = null,
                 Counterparty = "Магнит(Тюмень)",
                 WorkType = "Разгрузка",
@@ -149,12 +149,12 @@ public class ApiService : IApiService
             },
             new Vehicle
             {
-                Id = "1be5e8ed-5c3d-4a8f-9e2f-7d6c5b4a3928",
+                Id = "v3",
                 Number = "Я-9310099850",
-                Date = new DateTime(2026, 5, 21, 14, 22, 5),
-                ArrivalDate = new DateTime(2026, 5, 21, 9, 0, 0),
-                EntryDate = new DateTime(2026, 5, 21, 9, 45, 10),
-                ExitDate = new DateTime(2026, 5, 21, 14, 50, 0),
+                Date = new DateTimeOffset(2026, 5, 21, 14, 22, 5, TimeSpan.Zero),
+                ArrivalDate = new DateTimeOffset(2026, 5, 21, 9, 0, 0, TimeSpan.Zero),
+                EntryDate = new DateTimeOffset(2026, 5, 21, 9, 45, 10, TimeSpan.Zero),
+                ExitDate = new DateTimeOffset(2026, 5, 21, 14, 50, 0, TimeSpan.Zero),
                 Counterparty = "X5 Retail Group",
                 WorkType = "Разгрузка",
                 VehicleBrand = "MAN",

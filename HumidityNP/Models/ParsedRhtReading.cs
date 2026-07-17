@@ -1,4 +1,5 @@
 ﻿using HumidityNP.Enums;
+using System;
 
 namespace HumidityNP.Models;
 
@@ -88,6 +89,19 @@ public class ParsedRhtReading
     /// Возвращает час в 24-часовом формате.
     /// </summary>
     public int Hour24 => IsPM ? (TimestampHour & 0x1F) + 12 : (TimestampHour & 0x1F);
+
+    /// <summary>
+    /// Временная метка в виде DateTimeOffset.
+    /// Год интерпретируется как 2000+ для значений 0-49 и 1900+ для 50-99.
+    /// </summary>
+    public DateTimeOffset Timestamp
+    {
+        get
+        {
+            int year = TimestampYear < 50 ? 2000 + TimestampYear : 1900 + TimestampYear;
+            return new DateTimeOffset(year, TimestampMonth, TimestampDay, Hour24, TimestampMinute, TimestampSecond, TimeSpan.Zero);
+        }
+    }
 
     /// <summary>
     /// Возвращает строковое представление данных RHT измерения.

@@ -35,7 +35,7 @@ public class HumidityMeasurement
     public MeasurementSource Source { get; set; }
 
     /// <summary>Дата и время замера</summary>
-    public DateTime Timestamp { get; set; } = DateTime.Now;
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
 
     /// <summary>Знак (Less/Greater/None) для BLE-данных</summary>
     public string Sign { get; set; } = string.Empty;
