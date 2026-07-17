@@ -51,7 +51,10 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     private string _currentMeasurementType = "-";
 
     [ObservableProperty]
-    private string _currentSign = "";
+    private SignType _currentSign;
+
+    [ObservableProperty]
+    private string _currentSignString = "";
 
     [ObservableProperty]
     private DateTimeOffset? _lastDataTime;
@@ -186,7 +189,8 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             CurrentTemperature = data.TemperatureC.ToString("F1") + "°C";
             CurrentMaterial = data.Material.ToString();
             CurrentMeasurementType = data.Type.ToString();
-            CurrentSign = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
+            CurrentSign = data.Sign;
+            CurrentSignString = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
 
             LastDataTime = DateTimeOffset.UtcNow;
             IsDataAvailable = true;
@@ -202,7 +206,8 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             CurrentTemperature = data.TemperatureC.ToString("F1") + "°C";
             CurrentMaterial = data.Material.ToString();
             CurrentMeasurementType = data.Type.ToString();
-            CurrentSign = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
+            CurrentSign = data.Sign;
+            CurrentSignString = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
 
             LastDataTime = DateTimeOffset.UtcNow;
             IsDataAvailable = true;
@@ -262,7 +267,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             TemperatureC = temperature,
             MeasurementType = CurrentMeasurementType,
             Material = CurrentMaterial,
-            Sign = CurrentSign,
+            Sign = MapSignToString(CurrentSign),
             Source = MeasurementSource.Auto,
             Timestamp = DateTimeOffset.UtcNow
         };
@@ -273,6 +278,16 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
         await Shell.Current.DisplayAlert("Успех", "Измерение сохранено", "OK");
     }
 
+    private static string MapSignToString(SignType sign)
+    {
+        return sign switch
+        {
+            SignType.Less => "Less",
+            SignType.Greater => "Greater",
+            SignType.None => "None",
+            _ => "None"
+        };
+    }
     private async Task LoadDataAsync()
     {
         if (string.IsNullOrEmpty(VehicleId)) return;

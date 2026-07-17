@@ -55,7 +55,7 @@ public class HumidityMeasurement
         get
         {
             string sign = Sign == "Less" ? "<" : Sign == "Greater" ? ">" : "";
-            return $"{sign}{HumidityValue:F1}%";
+            return $"{sign} {HumidityValue:F1}%";
         }
     }
 

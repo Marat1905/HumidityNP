@@ -257,7 +257,7 @@
                         <Label FontSize="22" FontAttributes="Bold" VerticalOptions="Center">
                             <Label.FormattedText>
                                 <FormattedString>
-                                    <Span Text="{Binding CurrentSign}" TextColor="Red" />
+                                    <Span Text="{Binding CurrentSignString}" TextColor="Red" />
                                     <Span Text=" " />
                                     <Span Text="{Binding CurrentHumidity}" TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
                                 </FormattedString>
