@@ -56,6 +56,8 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     [ObservableProperty]
     private DateTimeOffset? _lastDataTime;
 
+    public DateTimeOffset? LocalLastDataTime => LastDataTime?.ToLocalTime();
+
     [ObservableProperty]
     private bool _isRefreshing;
 
@@ -186,7 +188,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             CurrentMeasurementType = data.Type.ToString();
             CurrentSign = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
 
-            LastDataTime = DateTimeOffset.Now;
+            LastDataTime = DateTimeOffset.UtcNow;
             IsDataAvailable = true;
         });
     }
@@ -202,7 +204,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             CurrentMeasurementType = data.Type.ToString();
             CurrentSign = data.Sign == SignType.Less ? "<" : data.Sign == SignType.Greater ? ">" : "";
 
-            LastDataTime = DateTimeOffset.Now;
+            LastDataTime = DateTimeOffset.UtcNow;
             IsDataAvailable = true;
         }
     }
@@ -262,7 +264,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             Material = CurrentMaterial,
             Sign = CurrentSign,
             Source = MeasurementSource.Auto,
-            Timestamp = DateTimeOffset.Now
+            Timestamp = DateTimeOffset.UtcNow
         };
 
         await _localStorage.SaveMeasurementAsync(measurement);
@@ -314,7 +316,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
                 Material = "Manual",
                 Sign = "None",
                 Source = MeasurementSource.Manual,
-                Timestamp = DateTimeOffset.Now
+                Timestamp = DateTimeOffset.UtcNow
             };
 
             await _localStorage.SaveMeasurementAsync(measurement);

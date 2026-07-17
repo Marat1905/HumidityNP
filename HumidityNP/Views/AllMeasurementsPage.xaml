@@ -219,7 +219,7 @@
 
                                     <!-- Дата и время замера -->
                                     <Label Grid.Row="1" Grid.Column="1"
-                                           Text="{Binding Timestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}"
+                                           Text="{Binding LocalTimestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}"
                                            FontSize="12"
                                            TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}" />
 

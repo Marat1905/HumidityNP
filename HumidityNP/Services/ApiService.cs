@@ -1,12 +1,12 @@
-﻿using System;
+﻿using HumidityNP.Models;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using HumidityNP.Models;
-using Microsoft.Extensions.Logging;
 
 namespace HumidityNP.Services;
 
@@ -66,7 +66,7 @@ public class ApiService : IApiService
                     });
                 }
             }
-
+            
             if (requests.Count == 0)
             {
                 return new BulkMeasurementResult

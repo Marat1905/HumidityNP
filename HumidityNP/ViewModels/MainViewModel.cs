@@ -83,7 +83,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void AddLog(string message)
     {
-        LogMessages.Insert(0, $"[{DateTimeOffset.Now:HH:mm:ss}] {message}");
+        LogMessages.Insert(0, $"[{DateTimeOffset.UtcNow:HH:mm:ss}] {message}");
         if (LogMessages.Count > 50)
             LogMessages.RemoveAt(LogMessages.Count - 1);
     }

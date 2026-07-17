@@ -35,10 +35,18 @@ public class HumidityMeasurement
     public MeasurementSource Source { get; set; }
 
     /// <summary>Дата и время замера</summary>
-    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>Знак (Less/Greater/None) для BLE-данных</summary>
     public string Sign { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Локальное время замера для отображения в UI.
+    /// Автоматически конвертируется в часовой пояс устройства.
+    /// </summary>
+    [NotMapped]
+    [Ignore]
+    public DateTimeOffset LocalTimestamp => Timestamp.ToLocalTime();
 
 
     /// <summary>Отображаемое значение влажности</summary>

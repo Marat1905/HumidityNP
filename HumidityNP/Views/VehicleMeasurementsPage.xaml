@@ -292,7 +292,7 @@
 
                 <!-- Тип и время в одну строку -->
                 <Grid Grid.Row="4" ColumnDefinitions="*,*" Margin="38,0,0,0">
-                    <Label Grid.Column="1" Text="{Binding LastDataTime, StringFormat='🕐 {0:HH:mm:ss}'}"
+                    <Label Grid.Column="1" Text="{Binding LocalLastDataTime, StringFormat='🕐 {0:HH:mm:ss}'}"
                            FontSize="11" TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}" 
                            IsVisible="{Binding IsDataAvailable}" HorizontalOptions="End" />
                 </Grid>
@@ -434,7 +434,7 @@
 
                                     <!-- Дата и время замера -->
                                     <Label Grid.Row="1" Grid.Column="1"
-                                           Text="{Binding Timestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}"
+                                           Text="{Binding LocalTimestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}"
                                            FontSize="12"
                                            TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}" />
 
