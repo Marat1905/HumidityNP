@@ -42,18 +42,16 @@ public class ApiService : IApiService
         }
     }
 
-    public async Task<bool> UploadMeasurementsAsync(List<HumidityMeasurement> measurements)
+    public async Task<BulkMeasurementResult?> UploadMeasurementsAsync(List<HumidityMeasurement> measurements)
     {
-        if (measurements == null || measurements.Count == 0)
-            return true;
-
         try
         {
             var requests = new List<CreateMeasurementRequest>();
+
             foreach (var m in measurements)
             {
-                // Безопасно преобразуем строковый ID из SQLite в Guid для API
-                if (Guid.TryParse(m.VehicleId, out Guid vehicleGuid))
+                // Преобразуем строковый VehicleId в Guid, как ожидает сервер
+                if (Guid.TryParse(m.VehicleId, out var vehicleGuid))
                 {
                     requests.Add(new CreateMeasurementRequest
                     {
@@ -62,19 +60,25 @@ public class ApiService : IApiService
                         TemperatureC = m.TemperatureC,
                         MeasurementType = m.MeasurementType,
                         Material = m.Material,
-                        Source = m.Source.ToString(), // Преобразуем enum в строку
-                        Timestamp = new DateTimeOffset(m.Timestamp), // Преобразуем DateTime в DateTimeOffset
-                        Sign = m.Sign
+                        Sign = m.Sign,
+                        Source = m.Source.ToString(),
+                        Timestamp = m.Timestamp
                     });
-                }
-                else
-                {
-                    _logger.LogWarning($"Неверный VehicleId: {m.VehicleId}. Пропуск замера.");
                 }
             }
 
             if (requests.Count == 0)
-                return false;
+            {
+                return new BulkMeasurementResult
+                {
+                    CreatedCount = 0,
+                    SkippedCount = measurements.Count,
+                    Errors = new List<MeasurementBulkError>
+                    {
+                        new MeasurementBulkError { Message = "Некорректный VehicleId во всех записях" }
+                    }
+                };
+            }
 
             var url = "api/v1/measurements/bulk";
             var json = JsonSerializer.Serialize(requests);
@@ -84,20 +88,19 @@ public class ApiService : IApiService
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation($"Успешно выгружено {requests.Count} замеров.");
-                return true;
+                var resultJson = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<BulkMeasurementResult>(resultJson, options);
             }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogError($"Ошибка выгрузки замеров. Статус: {response.StatusCode}. Ответ: {errorContent}");
-                return false;
-            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"[API] Ошибка выгрузки: {response.StatusCode}, {errorContent}");
+            return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Исключение при выгрузке замеров на API");
-            return false;
+            System.Diagnostics.Debug.WriteLine($"[API] Исключение при выгрузке: {ex.Message}");
+            return null;
         }
     }
 

@@ -15,7 +15,8 @@ public interface IApiService
     Task<List<Vehicle>> GetActiveVehiclesAsync();
 
     /// <summary>
-    /// Массовая выгрузка списка замеров на сервер.
+    /// Выгрузить список замеров на сервер.
+    /// Возвращает результат массовой операции или null при сетевой ошибке.
     /// </summary>
-    Task<bool> UploadMeasurementsAsync(List<HumidityMeasurement> measurements);
+    Task<BulkMeasurementResult?> UploadMeasurementsAsync(List<HumidityMeasurement> measurements);
 }

@@ -4,6 +4,7 @@ using HumidityNP.Models;
 using HumidityNP.Services;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Metrics;
+using System.Text;
 using System.Windows.Input;
 
 namespace HumidityNP.ViewModels;
@@ -18,6 +19,9 @@ public partial class AllMeasurementsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isRefreshing;
+
+    [ObservableProperty]
+    private bool _isBusy;
 
     public ICommand RefreshCommand { get; }
     public ICommand DeleteMeasurementCommand { get; }
@@ -71,31 +75,88 @@ public partial class AllMeasurementsViewModel : ObservableObject
         var toUpload = Measurements.ToList();
         if (!toUpload.Any())
         {
-            await Shell.Current.DisplayAlert("Выгрузка", "Нет замеров", "OK");
+            await Shell.Current.DisplayAlert("Выгрузка", "Нет замеров для выгрузки", "OK");
             return;
         }
 
-        bool confirm = await Shell.Current.DisplayAlert("Выгрузка", $"Выгрузить все {toUpload.Count} замеров?", "Да", "Нет");
+        bool confirm = await Shell.Current.DisplayAlert("Выгрузка", $"Выгрузить {toUpload.Count} замеров на сервер?", "Да", "Нет");
         if (!confirm) return;
 
+        IsBusy = true; // Если у вас есть такое свойство для индикатора загрузки
         try
         {
-            if (await _apiService.UploadMeasurementsAsync(toUpload))
+            var result = await _apiService.UploadMeasurementsAsync(toUpload);
+
+            if (result != null)
             {
-                var ids = toUpload.Select(m => m.LocalId).ToList();
-                await _localStorage.DeleteMeasurementsAsync(ids);
-                foreach (var m in toUpload)
+                var message = new StringBuilder();
+                message.AppendLine($"✅ Успешно создано: {result.CreatedCount}");
+
+                if (result.SkippedCount > 0)
+                {
+                    message.AppendLine($"⚠️ Пропущено: {result.SkippedCount}");
+                }
+
+                // 1. Определяем индексы замеров, которые завершились ошибкой
+                var failedIndexes = new HashSet<int>();
+                foreach (var error in result.Errors)
+                {
+                    if (error.Index >= 0 && error.Index < toUpload.Count)
+                    {
+                        failedIndexes.Add(error.Index);
+                    }
+                }
+
+                // 2. Разделяем замеры на успешные и неуспешные
+                var successfulMeasurements = new List<HumidityMeasurement>();
+                var measurementsToDelete = new List<int>();
+
+                for (int i = 0; i < toUpload.Count; i++)
+                {
+                    if (!failedIndexes.Contains(i))
+                    {
+                        measurementsToDelete.Add(toUpload[i].LocalId);
+                        successfulMeasurements.Add(toUpload[i]);
+                    }
+                }
+
+                // 3. Удаляем из локальной БД только успешные
+                if (measurementsToDelete.Any())
+                {
+                    await _localStorage.DeleteMeasurementsAsync(measurementsToDelete);
+                }
+
+                // 4. Удаляем из UI-коллекции (ObservableCollection)
+                foreach (var m in successfulMeasurements)
+                {
                     Measurements.Remove(m);
-                await Shell.Current.DisplayAlert("Успех", "Все замеры выгружены", "OK");
+                }
+
+                // 5. Формируем сообщение об ошибках, если они есть
+                if (result.SkippedCount > 0 && result.Errors.Any())
+                {
+                    var errorDetails = string.Join("\n", result.Errors.Take(5).Select(e => $"• Запись #{e.Index + 1}: {e.Message}"));
+                    if (result.Errors.Count() > 5)
+                        errorDetails += "\n• ...и другие";
+
+                    message.AppendLine("\n📝 Детали ошибок:");
+                    message.AppendLine(errorDetails);
+                }
+
+                await Shell.Current.DisplayAlert("Результат выгрузки", message.ToString(), "OK");
             }
             else
             {
-                await Shell.Current.DisplayAlert("Ошибка", "Не удалось выгрузить", "OK");
+                await Shell.Current.DisplayAlert("Ошибка сети", "Не удалось связаться с сервером или получить корректный ответ. Замеры сохранены локально.", "OK");
             }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Ошибка", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Критическая ошибка", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 }
