@@ -113,7 +113,7 @@ public class ApiService : IApiService
         {
             new Vehicle
             {
-                Id = "v1",
+                Id = "f47ac10b-58cc-4372-a567-0e02b2c3d479",
                 Number = "Я-9310099848",
                 Date = new DateTime(2026, 5, 21, 15, 17, 40),
                 ArrivalDate = new DateTime(2026, 5, 21, 10, 47, 38),
@@ -131,7 +131,7 @@ public class ApiService : IApiService
             },
             new Vehicle
             {
-                Id = "v2",
+                Id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
                 Number = "Я-9310099849",
                 Date = new DateTime(2026, 5, 21, 16, 5, 10),
                 ArrivalDate = new DateTime(2026, 5, 21, 12, 30, 0),
@@ -149,7 +149,7 @@ public class ApiService : IApiService
             },
             new Vehicle
             {
-                Id = "v3",
+                Id = "1be5e8ed-5c3d-4a8f-9e2f-7d6c5b4a3928",
                 Number = "Я-9310099850",
                 Date = new DateTime(2026, 5, 21, 14, 22, 5),
                 ArrivalDate = new DateTime(2026, 5, 21, 9, 0, 0),
