@@ -17,19 +17,19 @@ public class Vehicle
 
     /// <summary>Дата создания записи</summary>
     [JsonPropertyName("date")]
-    public DateTime Date { get; set; }
+    public DateTimeOffset Date { get; set; }
 
     /// <summary>Дата приезда</summary>
     [JsonPropertyName("arrivalDate")]
-    public DateTime ArrivalDate { get; set; }
+    public DateTimeOffset ArrivalDate { get; set; }
 
     /// <summary>Дата въезда</summary>
     [JsonPropertyName("entryDate")]
-    public DateTime EntryDate { get; set; }
+    public DateTimeOffset EntryDate { get; set; }
 
     /// <summary>Дата выезда</summary>
     [JsonPropertyName("exitDate")]
-    public DateTime? ExitDate { get; set; }
+    public DateTimeOffset? ExitDate { get; set; }
 
     /// <summary>Контрагент</summary>
     [JsonPropertyName("counterparty")]
@@ -69,7 +69,7 @@ public class Vehicle
 
     /// <summary>Отображаемое имя</summary>
     [JsonIgnore]
-    public string DisplayName => $"{VehicleBrand} {VehiclePlate}";
+    public string DisplayName => $"{VehicleBrand} {VehiclePlate}".Trim();
 
     /// <summary>Краткая информация</summary>
     [JsonIgnore]

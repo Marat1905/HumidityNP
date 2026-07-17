@@ -124,7 +124,7 @@ public partial class VehiclesViewModel : ObservableObject
             }
 
             // Затем загружаем свежие данные с API
-            var fresh = await _apiService.GetVehiclesAsync();
+            var fresh = await _apiService.GetActiveVehiclesAsync();
             if (fresh.Any())
             {
                 // Сохраняем в кеш

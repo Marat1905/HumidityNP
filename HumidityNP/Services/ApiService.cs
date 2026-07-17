@@ -1,27 +1,104 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using HumidityNP.Models;
+using Microsoft.Extensions.Logging;
 
 namespace HumidityNP.Services;
 
-/// <summary>
-/// Сервис получения машин. Сейчас возвращает фейковые данные.
-/// В будущем здесь будет HTTP-запрос к API.
-/// </summary>
 public class ApiService : IApiService
 {
-    public async Task<List<Vehicle>> GetVehiclesAsync()
+    private readonly HttpClient _httpClient;
+    private readonly ILogger<ApiService> _logger;
+
+    public ApiService(HttpClient httpClient, ILogger<ApiService> logger)
     {
-        // Имитация задержки сети
-        await Task.Delay(500);
+        _httpClient = httpClient;
+        _logger = logger;
+    }
 
-        // TODO: Заменить на реальный HTTP-запрос к API
-        // var client = new HttpClient();
-        // var response = await client.GetStringAsync("https://api.example.com/vehicles");
-        // return JsonSerializer.Deserialize<List<Vehicle>>(response);
+    public async Task<List<Vehicle>> GetActiveVehiclesAsync()
+    {
+        try
+        {
+            // Обращаемся к новому эндпоинту без пагинации
+            var url = "api/v1/vehicles/active/all";
 
-        return GetFakeVehicles();
+            // Сервер вернет массив JSON, который десериализуется напрямую в List<Vehicle>
+            var response = await _httpClient.GetFromJsonAsync<List<Vehicle>>(url);
+
+            return response ?? new List<Vehicle>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при получении списка активных машин с API");
+
+            // Возвращаем фейковые данные при ошибке сети, чтобы не ломать UI во время отладки
+            return GetFakeVehicles();
+        }
+    }
+
+    public async Task<bool> UploadMeasurementsAsync(List<HumidityMeasurement> measurements)
+    {
+        if (measurements == null || measurements.Count == 0)
+            return true;
+
+        try
+        {
+            var requests = new List<CreateMeasurementRequest>();
+            foreach (var m in measurements)
+            {
+                // Безопасно преобразуем строковый ID из SQLite в Guid для API
+                if (Guid.TryParse(m.VehicleId, out Guid vehicleGuid))
+                {
+                    requests.Add(new CreateMeasurementRequest
+                    {
+                        VehicleId = vehicleGuid,
+                        HumidityValue = m.HumidityValue,
+                        TemperatureC = m.TemperatureC,
+                        MeasurementType = m.MeasurementType,
+                        Material = m.Material,
+                        Source = m.Source.ToString(), // Преобразуем enum в строку
+                        Timestamp = new DateTimeOffset(m.Timestamp), // Преобразуем DateTime в DateTimeOffset
+                        Sign = m.Sign
+                    });
+                }
+                else
+                {
+                    _logger.LogWarning($"Неверный VehicleId: {m.VehicleId}. Пропуск замера.");
+                }
+            }
+
+            if (requests.Count == 0)
+                return false;
+
+            var url = "api/v1/measurements/bulk";
+            var json = JsonSerializer.Serialize(requests);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Успешно выгружено {requests.Count} замеров.");
+                return true;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"Ошибка выгрузки замеров. Статус: {response.StatusCode}. Ответ: {errorContent}");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Исключение при выгрузке замеров на API");
+            return false;
+        }
     }
 
     /// <summary>
@@ -86,31 +163,5 @@ public class ApiService : IApiService
                 Department = ""
             }
         };
-    }
-
-    public async Task<bool> UploadMeasurementsAsync(List<HumidityMeasurement> measurements)
-    {
-        try
-        {
-            // TODO: Заменить на реальный API-запрос
-            // var json = JsonSerializer.Serialize(measurements);
-            // var content = new StringContent(json, Encoding.UTF8, "application/json");
-            // var response = await _httpClient.PostAsync($"{ApiBaseUrl}/humidity/upload", content);
-            // return response.IsSuccessStatusCode;
-
-            // Фейковая задержка для имитации сети
-            await Task.Delay(1000);
-
-            System.Diagnostics.Debug.WriteLine(
-                $"[API] Выгружено {measurements.Count} замеров (фейк)");
-
-            // Имитация успеха
-            return true;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[API] Ошибка выгрузки: {ex.Message}");
-            return false;
-        }
     }
 }

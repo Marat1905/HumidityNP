@@ -10,13 +10,12 @@ namespace HumidityNP.Services;
 public interface IApiService
 {
     /// <summary>
-    /// Получить список машин, въезжающих на площадку.
+    /// Получить полный список активных машин, въезжающих или находящихся на площадке.
     /// </summary>
-    Task<List<Vehicle>> GetVehiclesAsync();
+    Task<List<Vehicle>> GetActiveVehiclesAsync();
 
     /// <summary>
-    /// Выгрузить список замеров на сервер.
-    /// Возвращает true при успехе.
+    /// Массовая выгрузка списка замеров на сервер.
     /// </summary>
     Task<bool> UploadMeasurementsAsync(List<HumidityMeasurement> measurements);
 }

@@ -22,9 +22,18 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+        // === РЕГИСТРАЦИЯ HTTP-КЛИЕНТА И API СЕРВИСА ===
+        builder.Services.AddHttpClient<IApiService, ApiService>(client =>
+        {
+            // ВАЖНО: Укажите правильный базовый URL вашего API!
+            // Для Android эмулятора: http://10.0.2.2:<порт_вашего_api> (например, 5000 или 7000)
+            // Для iOS эмулятора: http://localhost:<порт_вашего_api>
+            // Для реального физического устройства: http://<IP-адрес_компьютера_в_локальной_сети>:<порт>
+            client.BaseAddress = new Uri("http://192.168.88.35:5000");
+        });
+
         // Сервисы
         builder.Services.AddSingleton<IBleService, BleService>();
-        builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
         // ViewModels
