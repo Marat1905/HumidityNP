@@ -57,6 +57,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     private string _currentSignString = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LocalLastDataTime))]
     private DateTimeOffset? _lastDataTime;
 
     public DateTimeOffset? LocalLastDataTime => LastDataTime?.ToLocalTime();
