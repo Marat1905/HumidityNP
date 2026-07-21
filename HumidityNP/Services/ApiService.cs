@@ -61,12 +61,12 @@ public class ApiService : IApiService
                         MeasurementType = m.MeasurementType,
                         Material = m.Material,
                         Sign = m.Sign,
-                        Source = m.Source.ToString(),
+                        Source = m.Source,
                         Timestamp = m.Timestamp
                     });
                 }
             }
-            
+
             if (requests.Count == 0)
             {
                 return new BulkMeasurementResult

@@ -268,7 +268,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             TemperatureC = temperature,
             MeasurementType = CurrentMeasurementType,
             Material = CurrentMaterial,
-            Sign = MapSignToString(CurrentSign),
+            Sign = CurrentSign,
             Source = MeasurementSource.Auto,
             Timestamp = DateTimeOffset.UtcNow
         };
@@ -279,16 +279,6 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
         await Shell.Current.DisplayAlert("Успех", "Измерение сохранено", "OK");
     }
 
-    private static string MapSignToString(SignType sign)
-    {
-        return sign switch
-        {
-            SignType.Less => "Less",
-            SignType.Greater => "Greater",
-            SignType.None => "None",
-            _ => "None"
-        };
-    }
     private async Task LoadDataAsync()
     {
         if (string.IsNullOrEmpty(VehicleId)) return;
@@ -330,7 +320,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
                 TemperatureC = 0,
                 MeasurementType = "Manual",
                 Material = "Manual",
-                Sign = "None",
+                Sign = SignType.None,
                 Source = MeasurementSource.Manual,
                 Timestamp = DateTimeOffset.UtcNow
             };

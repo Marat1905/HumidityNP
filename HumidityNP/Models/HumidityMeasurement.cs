@@ -38,7 +38,7 @@ public class HumidityMeasurement
     public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>Знак (Less/Greater/None) для BLE-данных</summary>
-    public string Sign { get; set; } = string.Empty;
+    public SignType Sign { get; set; }
 
     /// <summary>
     /// Локальное время замера для отображения в UI.
@@ -48,13 +48,12 @@ public class HumidityMeasurement
     [Ignore]
     public DateTimeOffset LocalTimestamp => Timestamp.ToLocalTime();
 
-
     /// <summary>Отображаемое значение влажности</summary>
     public string DisplayValue
     {
         get
         {
-            string sign = Sign == "Less" ? "<" : Sign == "Greater" ? ">" : "";
+            string sign = Sign == SignType.Less ? "<" : Sign == SignType.Greater ? ">" : "";
             return $"{sign} {HumidityValue:F1}%";
         }
     }
