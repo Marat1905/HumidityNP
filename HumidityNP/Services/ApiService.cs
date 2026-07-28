@@ -116,54 +116,45 @@ public class ApiService : IApiService
                 Id = "v1",
                 Number = "Я-9310099848",
                 Date = new DateTimeOffset(2026, 5, 21, 15, 17, 40, TimeSpan.Zero),
-                ArrivalDate = new DateTimeOffset(2026, 5, 21, 10, 47, 38, TimeSpan.Zero),
-                EntryDate = new DateTimeOffset(2026, 5, 21, 11, 41, 19, TimeSpan.Zero),
+                EntryDate = new DateTimeOffset(2026, 5, 21, 10, 47, 38, TimeSpan.Zero),
                 ExitDate = new DateTimeOffset(2026, 5, 21, 15, 31, 55, TimeSpan.Zero),
                 Counterparty = "Тандер(Сургут)",
-                WorkType = "Разгрузка",
+                Inn = "1234567890",
                 VehicleBrand = "FAW",
                 VehiclePlate = "Н601УХ790",
                 Trailer = "ТВ156477",
                 Driver = "Иванов Иван Иванович",
-                Loader = "",
-                Expeditor = "ЭКОС ООО ТЛК",
-                Department = ""
+                MeasurementsCount = 5
             },
             new Vehicle
             {
                 Id = "v2",
                 Number = "Я-9310099849",
                 Date = new DateTimeOffset(2026, 5, 21, 16, 5, 10, TimeSpan.Zero),
-                ArrivalDate = new DateTimeOffset(2026, 5, 21, 12, 30, 0, TimeSpan.Zero),
-                EntryDate = new DateTimeOffset(2026, 5, 21, 13, 15, 22, TimeSpan.Zero),
+                EntryDate = new DateTimeOffset(2026, 5, 21, 12, 30, 0, TimeSpan.Zero),
                 ExitDate = null,
                 Counterparty = "Магнит(Тюмень)",
-                WorkType = "Разгрузка",
+                Inn = "0987654321",
                 VehicleBrand = "KAMAZ",
                 VehiclePlate = "А777МР72",
                 Trailer = "КТ88234",
                 Driver = "Петров Пётр Петрович",
-                Loader = "Сидоров С.С.",
-                Expeditor = "Деловые Линии",
-                Department = "Склад №3"
+                MeasurementsCount = 3
             },
             new Vehicle
             {
                 Id = "v3",
                 Number = "Я-9310099850",
                 Date = new DateTimeOffset(2026, 5, 21, 14, 22, 5, TimeSpan.Zero),
-                ArrivalDate = new DateTimeOffset(2026, 5, 21, 9, 0, 0, TimeSpan.Zero),
-                EntryDate = new DateTimeOffset(2026, 5, 21, 9, 45, 10, TimeSpan.Zero),
+                EntryDate = new DateTimeOffset(2026, 5, 21, 9, 0, 0, TimeSpan.Zero),
                 ExitDate = new DateTimeOffset(2026, 5, 21, 14, 50, 0, TimeSpan.Zero),
                 Counterparty = "X5 Retail Group",
-                WorkType = "Разгрузка",
+                Inn = "1122334455",
                 VehicleBrand = "MAN",
                 VehiclePlate = "В123ОЕ174",
                 Trailer = "РТ445566",
                 Driver = "Кузнецов Алексей Владимирович",
-                Loader = "",
-                Expeditor = "ЖелДорЭкспедиция",
-                Department = ""
+                MeasurementsCount = 8
             }
         };
     }
