@@ -195,64 +195,62 @@
                             <Frame Style="{StaticResource MeasurementCard}">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
 
-                                    <!-- Индикатор источника (иконка в круге) -->
+                                    <!-- Индикатор источника (иконка в круге) – занимает все 3 строки -->
                                     <Frame Grid.Row="0" Grid.RowSpan="3" Grid.Column="0"
                                            WidthRequest="44" HeightRequest="44"
                                            CornerRadius="22"
                                            HasShadow="False"
                                            Padding="0"
                                            VerticalOptions="Center"
-                                           BackgroundColor="{Binding Source, Converter={StaticResource BoolToColorConverter}}">
+                                           BackgroundColor="{Binding Measurement.Source, Converter={StaticResource BoolToColorConverter}}">
                                         <!-- Иконка зависит от источника: 📡 для Auto, ✋ для Manual -->
-                                        <Label Text="{Binding Source, Converter={StaticResource SourceToIconConverter}}"
+                                        <Label Text="{Binding Measurement.Source, Converter={StaticResource SourceToIconConverter}}"
                                                FontSize="20"
                                                HorizontalOptions="Center"
                                                VerticalOptions="Center" />
                                     </Frame>
 
-                                    <!-- Значение влажности -->
+                                    <!-- Строка 0: Значение влажности -->
                                     <Label Grid.Row="0" Grid.Column="1"
-                                           Text="{Binding DisplayValue}"
+                                           Text="{Binding Measurement.DisplayValue}"
                                            FontSize="18"
                                            FontAttributes="Bold"
                                            TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
 
-                                    <!-- Дата и время замера -->
+                                    <!-- Строка 1: Информация о машине (номер пропуска и госномер) -->
                                     <Label Grid.Row="1" Grid.Column="1"
-                                           Text="{Binding LocalTimestamp, StringFormat='{0:dd.MM.yyyy HH:mm:ss}'}"
+                                           Text="{Binding DisplayVehicleInfo}"
                                            FontSize="12"
-                                           TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}" />
+                                           TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}"
+                                           TextDecorations="Underline"
+                                           VerticalOptions="Center" />
 
-                                    <!-- Источник данных и ID машины -->
-                                    <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto,Auto" ColumnSpacing="8">
-                                        <Label Grid.Column="0"
-                                               Text="{Binding SourceDisplay}"
-                                               FontSize="11"
-                                               TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}" />
-                                        <Label Grid.Column="1"
-                                               Text="{Binding VehicleId}"
-                                               FontSize="11"
-                                               TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}"
-                                               TextDecorations="Underline" />
-                                    </Grid>
+                                    <!-- Строка 2: Материал (слева) и дата/время (справа) -->
+                                    <!-- Материал -->
+                                    <Label Grid.Row="2" Grid.Column="1"
+                                           Text="{Binding Measurement.Material}"
+                                           FontSize="11"
+                                           TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}"
+                                           VerticalOptions="Center" />
 
-                                    <!-- Температура -->
+                                    <!-- Дата и время замера (справа) -->
+                                    <Label Grid.Row="2" Grid.Column="2"
+                                           Text="{Binding Measurement.LocalTimestamp, StringFormat='{0:dd.MM.yyyy HH:mm}'}"
+                                           FontSize="12"
+                                           TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End" />
+
+                                    <!-- Температура (справа, занимает строки 0-1) -->
                                     <VerticalStackLayout Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
                                                          VerticalOptions="Center" HorizontalOptions="End" Spacing="2">
-                                        <Label Text="{Binding TemperatureC, StringFormat='{0:F1}°C'}"
+                                        <Label Text="{Binding Measurement.TemperatureC, StringFormat='{0:F1}°C'}"
                                                FontSize="14"
                                                FontAttributes="Bold"
                                                TextColor="{AppThemeBinding Light=#E65100, Dark=#FFB74D}"
                                                HorizontalOptions="End" />
                                     </VerticalStackLayout>
 
-                                    <!-- Материал -->
-                                    <Label Grid.Row="2" Grid.Column="2"
-                                           Text="{Binding Material}"
-                                           FontSize="11"
-                                           TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}"
-                                           VerticalOptions="Center"
-                                           HorizontalOptions="End" />
                                 </Grid>
                             </Frame>
                         </SwipeView>

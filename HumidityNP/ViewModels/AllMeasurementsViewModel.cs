@@ -3,19 +3,24 @@ using CommunityToolkit.Mvvm.Input;
 using HumidityNP.Models;
 using HumidityNP.Services;
 using System.Collections.ObjectModel;
-using System.Diagnostics.Metrics;
 using System.Text;
 using System.Windows.Input;
 
 namespace HumidityNP.ViewModels;
 
+/// <summary>
+/// ViewModel для страницы отображения всех локальных замеров.
+/// Загружает замеры из локального хранилища, дополняет их информацией о машинах из кеша.
+/// Позволяет выгружать все замеры на сервер и удалять отдельные записи.
+/// </summary>
 public partial class AllMeasurementsViewModel : ObservableObject
 {
     private readonly ILocalStorageService _localStorage;
     private readonly IApiService _apiService;
 
+    /// <summary>Коллекция отображаемых элементов (замер + информация о машине).</summary>
     [ObservableProperty]
-    private ObservableCollection<HumidityMeasurement> _measurements = new();
+    private ObservableCollection<MeasurementDisplayItem> _measurements = new();
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -33,21 +38,63 @@ public partial class AllMeasurementsViewModel : ObservableObject
         _apiService = apiService;
 
         RefreshCommand = new AsyncRelayCommand(LoadMeasurementsAsync);
-        DeleteMeasurementCommand = new AsyncRelayCommand<HumidityMeasurement>(DeleteMeasurementAsync);
+        DeleteMeasurementCommand = new AsyncRelayCommand<MeasurementDisplayItem>(DeleteMeasurementAsync);
         UploadAllCommand = new AsyncRelayCommand(UploadAllAsync);
 
         LoadMeasurementsAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Загружает все замеры и кешированные машины, строит отображаемую коллекцию.
+    /// </summary>
     private async Task LoadMeasurementsAsync()
     {
         IsRefreshing = true;
         try
         {
+            // Получаем все замеры
             var all = await _localStorage.GetAllMeasurementsAsync();
+
+            // Загружаем кеш машин для получения номера и госномера
+            var vehicles = await _localStorage.GetCachedVehiclesAsync();
+            var vehicleDict = vehicles.ToDictionary(v => v.Id, v => v);
+
             Measurements.Clear();
+
             foreach (var m in all.OrderByDescending(m => m.Timestamp))
-                Measurements.Add(m);
+            {
+                Vehicle vehicle = null;
+                if (!string.IsNullOrEmpty(m.VehicleId) && vehicleDict.TryGetValue(m.VehicleId, out var v))
+                {
+                    vehicle = v;
+                }
+
+                string vehicleInfo;
+                string vehicleNumber = string.Empty;
+                string vehiclePlate = string.Empty;
+
+                if (vehicle != null)
+                {
+                    vehicleNumber = vehicle.Number;
+                    vehiclePlate = vehicle.VehiclePlate?.Replace(" ", "").ToUpperInvariant() ?? string.Empty;
+                    vehicleInfo = $"{vehicleNumber} ({vehiclePlate})";
+                }
+                else
+                {
+                    // Если машина не найдена в кеше, показываем VehicleId
+                    vehicleInfo = m.VehicleId;
+                }
+
+                var item = new MeasurementDisplayItem
+                {
+                    Measurement = m,
+                    DisplayVehicleInfo = vehicleInfo,
+                    VehicleNumber = vehicleNumber,
+                    VehiclePlate = vehiclePlate
+                };
+
+                Measurements.Add(item);
+            }
         }
         catch (Exception ex)
         {
@@ -59,30 +106,46 @@ public partial class AllMeasurementsViewModel : ObservableObject
         }
     }
 
-    private async Task DeleteMeasurementAsync(HumidityMeasurement measurement)
+    /// <summary>
+    /// Удаление замера с подтверждением.
+    /// </summary>
+    private async Task DeleteMeasurementAsync(MeasurementDisplayItem item)
     {
-        if (measurement == null) return;
-        bool confirm = await Shell.Current.DisplayAlert("Удаление", $"Удалить замер от {measurement.Timestamp}?", "Да", "Нет");
+        if (item == null) return;
+
+        bool confirm = await Shell.Current.DisplayAlert(
+            "Удаление",
+            $"Удалить замер от {item.Measurement.Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss}?",
+            "Да", "Нет");
+
         if (confirm)
         {
-            await _localStorage.DeleteMeasurementAsync(measurement.LocalId);
-            Measurements.Remove(measurement);
+            await _localStorage.DeleteMeasurementAsync(item.Measurement.LocalId);
+            Measurements.Remove(item);
         }
     }
 
+    /// <summary>
+    /// Выгрузка всех замеров на сервер.
+    /// После успешной выгрузки успешные записи удаляются из локальной БД и из UI.
+    /// </summary>
     private async Task UploadAllAsync()
     {
-        var toUpload = Measurements.ToList();
+        var toUpload = Measurements.Select(x => x.Measurement).ToList();
         if (!toUpload.Any())
         {
             await Shell.Current.DisplayAlert("Выгрузка", "Нет замеров для выгрузки", "OK");
             return;
         }
 
-        bool confirm = await Shell.Current.DisplayAlert("Выгрузка", $"Выгрузить {toUpload.Count} замеров на сервер?", "Да", "Нет");
+        bool confirm = await Shell.Current.DisplayAlert(
+            "Выгрузка",
+            $"Выгрузить {toUpload.Count} замеров на сервер?",
+            "Да", "Нет");
+
         if (!confirm) return;
 
-        IsBusy = true; // Если у вас есть такое свойство для индикатора загрузки
+        IsBusy = true;
         try
         {
             var result = await _apiService.UploadMeasurementsAsync(toUpload);
@@ -97,7 +160,7 @@ public partial class AllMeasurementsViewModel : ObservableObject
                     message.AppendLine($"⚠️ Пропущено: {result.SkippedCount}");
                 }
 
-                // 1. Определяем индексы замеров, которые завершились ошибкой
+                // Определяем индексы замеров, которые завершились ошибкой
                 var failedIndexes = new HashSet<int>();
                 foreach (var error in result.Errors)
                 {
@@ -107,7 +170,7 @@ public partial class AllMeasurementsViewModel : ObservableObject
                     }
                 }
 
-                // 2. Разделяем замеры на успешные и неуспешные
+                // Разделяем замеры на успешные и неуспешные
                 var successfulMeasurements = new List<HumidityMeasurement>();
                 var measurementsToDelete = new List<int>();
 
@@ -120,22 +183,27 @@ public partial class AllMeasurementsViewModel : ObservableObject
                     }
                 }
 
-                // 3. Удаляем из локальной БД только успешные
+                // Удаляем из локальной БД только успешные
                 if (measurementsToDelete.Any())
                 {
                     await _localStorage.DeleteMeasurementsAsync(measurementsToDelete);
                 }
 
-                // 4. Удаляем из UI-коллекции (ObservableCollection)
+                // Удаляем из UI-коллекции соответствующие элементы
                 foreach (var m in successfulMeasurements)
                 {
-                    Measurements.Remove(m);
+                    var itemToRemove = Measurements.FirstOrDefault(item => item.Measurement.LocalId == m.LocalId);
+                    if (itemToRemove != null)
+                    {
+                        Measurements.Remove(itemToRemove);
+                    }
                 }
 
-                // 5. Формируем сообщение об ошибках, если они есть
+                // Формируем сообщение об ошибках, если они есть
                 if (result.SkippedCount > 0 && result.Errors.Any())
                 {
-                    var errorDetails = string.Join("\n", result.Errors.Take(5).Select(e => $"• Запись #{e.Index + 1}: {e.Message}"));
+                    var errorDetails = string.Join("\n", result.Errors.Take(5).Select(e =>
+                        $"• Запись #{e.Index + 1}: {e.Message}"));
                     if (result.Errors.Count() > 5)
                         errorDetails += "\n• ...и другие";
 
@@ -147,7 +215,10 @@ public partial class AllMeasurementsViewModel : ObservableObject
             }
             else
             {
-                await Shell.Current.DisplayAlert("Ошибка сети", "Не удалось связаться с сервером или получить корректный ответ. Замеры сохранены локально.", "OK");
+                await Shell.Current.DisplayAlert(
+                    "Ошибка сети",
+                    "Не удалось связаться с сервером или получить корректный ответ. Замеры сохранены локально.",
+                    "OK");
             }
         }
         catch (Exception ex)
