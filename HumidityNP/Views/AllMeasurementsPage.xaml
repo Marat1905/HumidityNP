@@ -74,7 +74,7 @@
             <RowDefinition Height="Auto" />
             <!-- Строка 1: Заголовок с количеством -->
             <RowDefinition Height="Auto" />
-            <!-- Строка 2: Список замеров -->
+            <!-- Строка 2: Список замеров (с группировкой) -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -135,13 +135,13 @@
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"
                    VerticalOptions="Center" />
-            <!-- Счётчик замеров -->
+            <!-- Счётчик замеров (общее количество) -->
             <Frame Grid.Column="1"
                    BackgroundColor="{AppThemeBinding Light=#E8EAF6, Dark=#303F9F}"
                    CornerRadius="12"
                    Padding="8,3"
                    HasShadow="False">
-                <Label Text="{Binding Measurements.Count, StringFormat='{0} шт.'}"
+                <Label Text="{Binding TotalCount, StringFormat='{0} шт.'}"
                        TextColor="{AppThemeBinding Light=#1A237E, Dark=#90CAF9}"
                        FontSize="12"
                        FontAttributes="Bold" />
@@ -149,12 +149,13 @@
         </Grid>
 
         <!-- ============================================ -->
-        <!-- СПИСОК ВСЕХ ЗАМЕРОВ                          -->
+        <!-- СПИСОК ВСЕХ ЗАМЕРОВ (С ГРУППИРОВКОЙ)         -->
         <!-- ============================================ -->
         <RefreshView Grid.Row="2"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding RefreshCommand}">
-            <CollectionView ItemsSource="{Binding Measurements}"
+            <CollectionView ItemsSource="{Binding GroupedMeasurements}"
+                            IsGrouped="True"
                             SelectionMode="None">
 
                 <!-- Пустое состояние -->
@@ -177,7 +178,19 @@
                     </Grid>
                 </CollectionView.EmptyView>
 
-                <!-- Шаблон элемента списка замеров -->
+                <!-- Шаблон заголовка группы -->
+                <CollectionView.GroupHeaderTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,6,12,6" BackgroundColor="{AppThemeBinding Light=#E8EAF6, Dark=#1A237E}">
+                            <Label Text="{Binding Key}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#0D47A1, Dark=#90CAF9}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.GroupHeaderTemplate>
+
+                <!-- Шаблон элемента списка (замер) -->
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <!-- SwipeView для жеста удаления свайпом влево -->
@@ -217,7 +230,7 @@
                                            FontAttributes="Bold"
                                            TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
 
-                                    <!-- Строка 1: Информация о машине (номер пропуска и госномер) -->
+                                    <!-- Строка 1: Информация о машине (дублируется, но в группе заголовок уже показывает машину, можно оставить для ясности) -->
                                     <Label Grid.Row="1" Grid.Column="1"
                                            Text="{Binding DisplayVehicleInfo}"
                                            FontSize="12"
