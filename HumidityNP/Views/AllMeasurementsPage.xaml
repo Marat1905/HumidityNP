@@ -15,6 +15,9 @@
             <!-- Конвертер для цветов источников замера -->
             <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
 
+            <!-- Конвертер для проверки непустой строки (скрывает пустые значения) -->
+            <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+
             <!-- Стиль для карточки замера -->
             <Style x:Key="MeasurementCard" TargetType="Frame">
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#2A2A3A}" />
@@ -230,18 +233,17 @@
                                            FontAttributes="Bold"
                                            TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
 
-                                    <!-- Строка 1: Информация о машине (дублируется, но в группе заголовок уже показывает машину, можно оставить для ясности) -->
+                                    <!-- Строка 1: Тип измерения (новое поле, скрывается если пусто) -->
                                     <Label Grid.Row="1" Grid.Column="1"
-                                           Text="{Binding DisplayVehicleInfo}"
+                                           Text="{Binding Measurement.MeasurementType, StringFormat='Тип: {0}'}"
                                            FontSize="12"
                                            TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}"
-                                           TextDecorations="Underline"
-                                           VerticalOptions="Center" />
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding Measurement.MeasurementType, Converter={StaticResource StringNotEmptyConverter}}" />
 
                                     <!-- Строка 2: Материал (слева) и дата/время (справа) -->
-                                    <!-- Материал -->
                                     <Label Grid.Row="2" Grid.Column="1"
-                                           Text="{Binding Measurement.Material}"
+                                           Text="{Binding Measurement.Material, StringFormat='Материал: {0}'}"
                                            FontSize="11"
                                            TextColor="{AppThemeBinding Light=#9E9E9E, Dark=#616161}"
                                            VerticalOptions="Center" />

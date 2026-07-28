@@ -15,6 +15,7 @@
             <!-- ============================================= -->
             <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
 
             <!-- ============================================= -->
             <!-- Цвета для светлой / тёмной темы                -->
