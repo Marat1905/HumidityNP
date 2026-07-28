@@ -319,7 +319,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
                 HumidityValue = value,
                 TemperatureC = 0,
                 MeasurementType = "Manual",
-                Material = "Manual",
+                Material = "",
                 Sign = SignType.None,
                 Source = MeasurementSource.Manual,
                 Timestamp = DateTimeOffset.UtcNow

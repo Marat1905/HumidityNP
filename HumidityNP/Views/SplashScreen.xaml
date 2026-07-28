@@ -29,8 +29,8 @@
                 HorizontalOptions="Center" />
 
             <!-- Название приложения -->
-            <Label Text="💧 HumidityNP"
-                   FontSize="32"
+            <Label Text="💧 Контроль влажности"
+                   FontSize="30"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}"
                    HorizontalOptions="Center" />
