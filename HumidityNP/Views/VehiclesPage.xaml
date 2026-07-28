@@ -196,16 +196,16 @@
                                 <!-- Краткая информация: номер заявки | контрагент | вид работ -->
                                 <Label Grid.Row="1" Grid.Column="1"
                                        Style="{StaticResource VehicleInfoLabel}"
-                                       Text="{Binding Summary}"
+                                       Text="{Binding TicketAndTrailer}"
                                        LineBreakMode="TailTruncation" />
 
                                 <!-- Дополнительная информация: водитель и подразделение -->
                                 <Label Grid.Row="2" Grid.Column="1"
                                        Style="{StaticResource VehicleInfoLabel}"
                                        FontSize="12"
-                                       Text="{Binding Driver, StringFormat='👤 {0}'}"
+                                       Text="{Binding DriverDisplay, StringFormat='👤 {0}'}"
                                        LineBreakMode="TailTruncation"
-                                       IsVisible="{Binding Driver, Converter={StaticResource InverseBoolConverter}}" />
+                                       IsVisible="{Binding DriverDisplay, Converter={StaticResource InverseBoolConverter}}" />
 
                                 <!-- ============================================ -->
                                 <!-- СТРЕЛКА ВПРАВО (правая часть)                -->

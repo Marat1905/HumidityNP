@@ -173,7 +173,7 @@
 
                 <!-- Краткая информация -->
                 <Label Grid.Row="1" Grid.Column="1"
-                       Text="{Binding Vehicle.Summary}"
+                       Text="{Binding Vehicle.TicketAndTrailer}"
                        FontSize="13"
                        TextColor="{AppThemeBinding Light=#616161, Dark=#B0BEC5}"
                        LineBreakMode="TailTruncation" />

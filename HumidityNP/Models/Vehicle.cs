@@ -56,11 +56,41 @@ public class Vehicle
     [JsonPropertyName("measurementsCount")]
     public int MeasurementsCount { get; set; }
 
+
+
     /// <summary>Отображаемое имя (марка + госномер)</summary>
     [JsonIgnore]
-    public string DisplayName => $"{VehicleBrand} {VehiclePlate}".Trim();
+    public string DisplayName => $"{VehicleBrand?.ToUpperInvariant() ?? string.Empty} {VehiclePlate?.ToUpperInvariant().Replace(" ", string.Empty) ?? string.Empty}".Trim();
 
-    /// <summary>Краткая информация (номер заявки | контрагент)</summary>
+    /// <summary>
+    /// Строка с номером заявки и номером прицепа.
+    /// Используется вместо Summary на странице списка машин.
+    /// </summary>
     [JsonIgnore]
-    public string Summary => $"{Number} | {Counterparty}";
+    public string TicketAndTrailer => $"{Number} | Прицеп:{Trailer?.ToUpperInvariant().Replace(" ", string.Empty) ?? string.Empty}";
+
+    /// <summary>
+    /// ФИО водителя с нормализованным регистром (каждое слово с заглавной буквы).
+    /// </summary>
+    [JsonIgnore]
+    public string DriverDisplay
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Driver))
+                return Driver;
+
+            // Разбиваем строку на слова по пробелам
+            var words = Driver.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                // Если слово не пустое, делаем первую букву заглавной, остальные строчными
+                if (words[i].Length > 0)
+                {
+                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+                }
+            }
+            return string.Join(" ", words);
+        }
+    }
 }
