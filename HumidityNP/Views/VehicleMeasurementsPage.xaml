@@ -148,9 +148,9 @@
         <!-- КАРТОЧКА ИНФОРМАЦИИ О МАШИНЕ                 -->
         <!-- ============================================ -->
         <Frame Grid.Row="0" Style="{StaticResource VehicleInfoCard}">
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                <!-- Иконка машины -->
-                <Frame Grid.Row="0" Grid.RowSpan="3" Grid.Column="0"
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4">
+                <!-- Иконка машины (растягивается на все 4 строки) -->
+                <Frame Grid.Row="0" Grid.RowSpan="4" Grid.Column="0"
                        WidthRequest="52" HeightRequest="52"
                        CornerRadius="26"
                        BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#1A237E}"
@@ -171,7 +171,7 @@
                        TextColor="{AppThemeBinding Light=#1A237E, Dark=#90CAF9}"
                        LineBreakMode="TailTruncation" />
 
-                <!-- Краткая информация -->
+                <!-- Краткая информация (номер заявки и прицеп) -->
                 <Label Grid.Row="1" Grid.Column="1"
                        Text="{Binding Vehicle.TicketAndTrailer}"
                        FontSize="13"
@@ -181,6 +181,13 @@
                 <!-- Контрагент -->
                 <Label Grid.Row="2" Grid.Column="1"
                        Text="{Binding Vehicle.Counterparty, StringFormat='🏢 {0}'}"
+                       FontSize="12"
+                       TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}"
+                       LineBreakMode="TailTruncation" />
+
+                <!-- Водитель (добавленная строка) -->
+                <Label Grid.Row="3" Grid.Column="1"
+                       Text="{Binding Vehicle.DriverDisplay, StringFormat='👤 {0}'}"
                        FontSize="12"
                        TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}"
                        LineBreakMode="TailTruncation" />

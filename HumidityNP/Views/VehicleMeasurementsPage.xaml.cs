@@ -39,7 +39,9 @@ public partial class VehicleMeasurementsPage : ContentPage
 
     /// <summary>
     /// Вызывается при появлении страницы (в том числе при возврате на неё).
-    /// Подписываем ViewModel на события BLE-сервиса, чтобы получать актуальные данные с прибора.
+    /// Подписываем ViewModel на события BLE-сервиса, чтобы получать актуальные данные с прибора,
+    /// и перезагружаем список замеров, чтобы отобразить изменения, внесённые на других страницах
+    /// (например, удаление или выгрузка замеров на AllMeasurementsPage).
     /// </summary>
     protected override void OnAppearing()
     {
@@ -48,6 +50,10 @@ public partial class VehicleMeasurementsPage : ContentPage
         // Подписываемся на события BLE при каждом появлении страницы.
         // Внутри метода есть защита от повторной подписки.
         _viewModel.SubscribeToBleEvents();
+
+        // Перезагружаем список замеров из локального хранилища,
+        // чтобы синхронизировать с изменениями, выполненными на других страницах.
+        _viewModel.LoadDataCommand.Execute(null);
     }
 
     /// <summary>
