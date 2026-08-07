@@ -27,6 +27,11 @@
         <Tab Title="Все замеры" mi:MauiIcon.Value="{mi:Material Icon=ListAlt}">
             <ShellContent ContentTemplate="{DataTemplate local:AllMeasurementsPage}" Route="allmeasurements" />
         </Tab>
+
+        <!-- Новая вкладка для разгрузок -->
+        <Tab Title="Разгрузки" mi:MauiIcon.Value="{mi:Material Icon=Inventory}">
+            <ShellContent ContentTemplate="{DataTemplate local:AllUnloadsPage}" Route="allunloads" />
+        </Tab>
     </TabBar>
 
 </Shell>

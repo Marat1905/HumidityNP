@@ -117,6 +117,18 @@
                 <Setter Property="Padding" Value="16,8" />
                 <Setter Property="HeightRequest" Value="40" />
             </Style>
+
+            <!-- Стиль для кнопки "Разгрузка" (оранжевая) -->
+            <Style x:Key="UnloadButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#FF9800" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="CornerRadius" Value="25" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="HeightRequest" Value="44" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="HorizontalOptions" Value="Fill" />
+            </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -136,11 +148,13 @@
             <RowDefinition Height="Auto" />
             <!-- Строка 2: Данные с датчика -->
             <RowDefinition Height="Auto" />
-            <!-- Строка 3: Кнопки управления -->
+            <!-- Строка 3: Кнопка "Разгрузка" (НОВАЯ) -->
             <RowDefinition Height="Auto" />
-            <!-- Строка 4: Заголовок списка замеров -->
+            <!-- Строка 4: Кнопки управления (Зафиксировать / Вручную) -->
             <RowDefinition Height="Auto" />
-            <!-- Строка 5: Список замеров -->
+            <!-- Строка 5: Заголовок списка замеров -->
+            <RowDefinition Height="Auto" />
+            <!-- Строка 6: Список замеров -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -315,9 +329,24 @@
         </Frame>
 
         <!-- ============================================ -->
-        <!-- КНОПКИ УПРАВЛЕНИЯ                            -->
+        <!-- КНОПКА "РАЗГРУЗКА" (НОВАЯ)                    -->
         <!-- ============================================ -->
-        <Grid Grid.Row="3" Margin="12,4" ColumnDefinitions="*,*" ColumnSpacing="10">
+        <Frame Grid.Row="3"
+               Margin="12,4"
+               Padding="0"
+               CornerRadius="16"
+               BackgroundColor="Transparent"
+               HasShadow="False"
+               BorderColor="Transparent">
+            <Button Style="{StaticResource UnloadButtonStyle}"
+                    Text="📦 Разгрузка"
+                    Command="{Binding NavigateToUnloadCommand}" />
+        </Frame>
+
+        <!-- ============================================ -->
+        <!-- КНОПКИ УПРАВЛЕНИЯ (Зафиксировать / Вручную)   -->
+        <!-- ============================================ -->
+        <Grid Grid.Row="4" Margin="12,4" ColumnDefinitions="*,*" ColumnSpacing="10">
             <!-- Кнопка "Зафиксировать" (сохранить текущие данные с датчика) -->
             <Button Grid.Column="0"
                     Text="✅ Зафиксировать"
@@ -335,7 +364,7 @@
         <!-- ============================================ -->
         <!-- ЗАГОЛОВОК СПИСКА ЗАМЕРОВ                     -->
         <!-- ============================================ -->
-        <Grid Grid.Row="4" Margin="16,4,16,2" ColumnDefinitions="*,Auto">
+        <Grid Grid.Row="5" Margin="16,4,16,2" ColumnDefinitions="*,Auto">
             <Label Grid.Column="0"
                    Text="📋 История замеров"
                    FontSize="16"
@@ -358,7 +387,7 @@
         <!-- ============================================ -->
         <!-- СПИСОК СОХРАНЁННЫХ ЗАМЕРОВ                   -->
         <!-- ============================================ -->
-        <RefreshView Grid.Row="5"
+        <RefreshView Grid.Row="6"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding LoadDataCommand}">
             <CollectionView ItemsSource="{Binding Measurements}"

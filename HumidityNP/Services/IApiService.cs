@@ -19,4 +19,10 @@ public interface IApiService
     /// Возвращает результат массовой операции или null при сетевой ошибке.
     /// </summary>
     Task<BulkMeasurementResult?> UploadMeasurementsAsync(List<HumidityMeasurement> measurements);
+
+    // НОВЫЙ МЕТОД
+    /// <summary>
+    /// Отправить информацию о разгрузке машины на сервер.
+    /// </summary>
+    Task<bool> UnloadVehicleAsync(Guid vehicleId, UnloadVehicleRequest request);
 }

@@ -35,4 +35,24 @@ public interface ILocalStorageService
 
     /// <summary>Получить кешированные машины</summary>
     Task<List<Vehicle>> GetCachedVehiclesAsync();
+
+    // ---- МЕТОДЫ ДЛЯ РАЗГРУЗКИ ----
+
+    /// <summary>Сохранить информацию о разгрузке</summary>
+    Task SaveUnloadInfoAsync(UnloadInfo unload);
+
+    /// <summary>Получить информацию о разгрузке по ID машины</summary>
+    Task<UnloadInfo?> GetUnloadInfoByVehicleAsync(string vehicleId);
+
+    /// <summary>Получить информацию о разгрузке по локальному ID</summary>
+    Task<UnloadInfo?> GetUnloadInfoByLocalIdAsync(int localId);
+
+    /// <summary>Удалить разгрузку по локальному ID</summary>
+    Task DeleteUnloadInfoAsync(int localId);
+
+    /// <summary>Удалить разгрузку для конкретной машины</summary>
+    Task DeleteUnloadInfoForVehicleAsync(string vehicleId);
+
+    /// <summary>Получить все сохранённые разгрузки</summary>
+    Task<List<UnloadInfo>> GetAllUnloadInfosAsync();
 }

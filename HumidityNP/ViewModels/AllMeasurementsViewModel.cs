@@ -5,7 +5,6 @@ using HumidityNP.Services;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Input;
-using System.Xml.Linq;
 
 namespace HumidityNP.ViewModels;
 
@@ -14,6 +13,7 @@ namespace HumidityNP.ViewModels;
 /// Загружает замеры из локального хранилища, дополняет их информацией о машинах из кеша.
 /// Группирует замеры по машинам (номер пропуска + госномер).
 /// Позволяет выгружать все замеры на сервер и удалять отдельные записи.
+/// Также при выгрузке отправляет все невыгруженные данные разгрузки.
 /// </summary>
 public partial class AllMeasurementsViewModel : ObservableObject
 {
@@ -177,8 +177,9 @@ public partial class AllMeasurementsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Выгрузка всех замеров на сервер.
-    /// После успешной выгрузки успешные записи удаляются из локальной БД и из UI-групп.
+    /// Выгрузка всех невыгруженных разгрузок и всех замеров на сервер.
+    /// Сначала отправляются разгрузки, затем замеры.
+    /// После успешной отправки соответствующие записи удаляются из локальной БД.
     /// </summary>
     private async Task UploadAllAsync()
     {
@@ -188,110 +189,190 @@ public partial class AllMeasurementsViewModel : ObservableObject
 
         if (!toUpload.Any())
         {
-            await Shell.Current.DisplayAlert("Выгрузка", "Нет замеров для выгрузки", "OK");
-            return;
+            // Если нет замеров, проверяем, есть ли невыгруженные разгрузки
+            var unloads = await _localStorage.GetAllUnloadInfosAsync();
+            var pendingUnloads = unloads.Where(u => !u.IsUploaded).ToList();
+            if (!pendingUnloads.Any())
+            {
+                await Shell.Current.DisplayAlert("Выгрузка", "Нет замеров и разгрузок для выгрузки", "OK");
+                return;
+            }
         }
 
         bool confirm = await Shell.Current.DisplayAlert(
             "Выгрузка",
-            $"Выгрузить {toUpload.Count} замеров на сервер?",
+            $"Выгрузить {toUpload.Count} замеров и все невыгруженные разгрузки на сервер?",
             "Да", "Нет");
 
         if (!confirm) return;
 
         IsBusy = true;
+        var resultMessage = new StringBuilder();
+        bool unloadSuccess = true;
+        bool measurementSuccess = true;
+        int uploadedUnloads = 0;
+        int failedUnloads = 0;
+
         try
         {
-            var result = await _apiService.UploadMeasurementsAsync(toUpload);
+            // ========== 1. ОТПРАВКА РАЗГРУЗОК ==========
+            var allUnloads = await _localStorage.GetAllUnloadInfosAsync();
+            var pendingUnloads = allUnloads.Where(u => !u.IsUploaded).ToList();
 
-            if (result != null)
+            if (pendingUnloads.Any())
             {
-                var message = new StringBuilder();
-                message.AppendLine($"✅ Успешно создано: {result.CreatedCount}");
+                resultMessage.AppendLine("📦 Отправка разгрузок:");
 
-                if (result.SkippedCount > 0)
+                foreach (var unload in pendingUnloads)
                 {
-                    message.AppendLine($"⚠️ Пропущено: {result.SkippedCount}");
-                }
-
-                // Определяем индексы замеров, которые завершились ошибкой
-                var failedIndexes = new HashSet<int>();
-                foreach (var error in result.Errors)
-                {
-                    if (error.Index >= 0 && error.Index < toUpload.Count)
+                    // Преобразуем VehicleId (string) в Guid
+                    if (!Guid.TryParse(unload.VehicleId, out var vehicleGuid))
                     {
-                        failedIndexes.Add(error.Index);
+                        resultMessage.AppendLine($"⚠️ Пропущена разгрузка для машины {unload.VehicleId}: некорректный GUID");
+                        failedUnloads++;
+                        continue;
                     }
-                }
 
-                // Разделяем замеры на успешные и неуспешные
-                var successfulMeasurements = new List<HumidityMeasurement>();
-                var measurementsToDelete = new List<int>();
-
-                for (int i = 0; i < toUpload.Count; i++)
-                {
-                    if (!failedIndexes.Contains(i))
+                    var request = new UnloadVehicleRequest
                     {
-                        measurementsToDelete.Add(toUpload[i].LocalId);
-                        successfulMeasurements.Add(toUpload[i]);
-                    }
-                }
+                        BaleCount = unload.BaleCount,
+                        DamagedBaleCount = unload.DamagedBaleCount,
+                        WeightKg = unload.WeightKg,
+                        StackNumber = unload.StackNumber
+                    };
 
-                // Удаляем из локальной БД только успешные
-                if (measurementsToDelete.Any())
-                {
-                    await _localStorage.DeleteMeasurementsAsync(measurementsToDelete);
-                }
-
-                // Удаляем успешные замеры из групп
-                foreach (var m in successfulMeasurements)
-                {
-                    // Ищем элемент в группах
-                    GroupedMeasurements targetGroup = null;
-                    MeasurementDisplayItem targetItem = null;
-                    foreach (var group in GroupedMeasurements)
+                    try
                     {
-                        var item = group.FirstOrDefault(i => i.Measurement.LocalId == m.LocalId);
-                        if (item != null)
+                        bool success = await _apiService.UnloadVehicleAsync(vehicleGuid, request);
+                        if (success)
                         {
-                            targetGroup = group;
-                            targetItem = item;
-                            break;
+                            // Удаляем успешно отправленную разгрузку из БД
+                            await _localStorage.DeleteUnloadInfoForVehicleAsync(unload.VehicleId);
+                            uploadedUnloads++;
+                            resultMessage.AppendLine($"✅ Разгрузка для {unload.VehicleId} отправлена");
+                        }
+                        else
+                        {
+                            failedUnloads++;
+                            resultMessage.AppendLine($"❌ Ошибка при отправке разгрузки для {unload.VehicleId}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        failedUnloads++;
+                        resultMessage.AppendLine($"❌ Исключение при отправке разгрузки {unload.VehicleId}: {ex.Message}");
+                    }
+                }
+
+                resultMessage.AppendLine();
+            }
+
+            // ========== 2. ОТПРАВКА ЗАМЕРОВ ==========
+            if (toUpload.Any())
+            {
+                resultMessage.AppendLine("📋 Отправка замеров:");
+                var result = await _apiService.UploadMeasurementsAsync(toUpload);
+
+                if (result != null)
+                {
+                    resultMessage.AppendLine($"✅ Успешно создано: {result.CreatedCount}");
+                    if (result.SkippedCount > 0)
+                    {
+                        resultMessage.AppendLine($"⚠️ Пропущено: {result.SkippedCount}");
+                    }
+
+                    // Определяем индексы замеров, которые завершились ошибкой
+                    var failedIndexes = new HashSet<int>();
+                    foreach (var error in result.Errors)
+                    {
+                        if (error.Index >= 0 && error.Index < toUpload.Count)
+                        {
+                            failedIndexes.Add(error.Index);
                         }
                     }
 
-                    if (targetGroup != null && targetItem != null)
+                    // Разделяем замеры на успешные и неуспешные
+                    var successfulMeasurements = new List<HumidityMeasurement>();
+                    var measurementsToDelete = new List<int>();
+
+                    for (int i = 0; i < toUpload.Count; i++)
                     {
-                        targetGroup.Remove(targetItem);
-                        if (targetGroup.Count == 0)
+                        if (!failedIndexes.Contains(i))
                         {
-                            GroupedMeasurements.Remove(targetGroup);
+                            measurementsToDelete.Add(toUpload[i].LocalId);
+                            successfulMeasurements.Add(toUpload[i]);
                         }
-                        TotalCount--;
                     }
-                }
 
-                // Формируем сообщение об ошибках, если они есть
-                if (result.SkippedCount > 0 && result.Errors.Any())
+                    // Удаляем из локальной БД только успешные
+                    if (measurementsToDelete.Any())
+                    {
+                        await _localStorage.DeleteMeasurementsAsync(measurementsToDelete);
+                    }
+
+                    // Удаляем успешные замеры из групп
+                    foreach (var m in successfulMeasurements)
+                    {
+                        // Ищем элемент в группах
+                        GroupedMeasurements targetGroup = null;
+                        MeasurementDisplayItem targetItem = null;
+                        foreach (var group in GroupedMeasurements)
+                        {
+                            var item = group.FirstOrDefault(i => i.Measurement.LocalId == m.LocalId);
+                            if (item != null)
+                            {
+                                targetGroup = group;
+                                targetItem = item;
+                                break;
+                            }
+                        }
+
+                        if (targetGroup != null && targetItem != null)
+                        {
+                            targetGroup.Remove(targetItem);
+                            if (targetGroup.Count == 0)
+                            {
+                                GroupedMeasurements.Remove(targetGroup);
+                            }
+                            TotalCount--;
+                        }
+                    }
+
+                    // Формируем сообщение об ошибках, если они есть
+                    if (result.SkippedCount > 0 && result.Errors.Any())
+                    {
+                        var errorDetails = string.Join("\n", result.Errors.Take(5).Select(e =>
+                            $"• Запись #{e.Index + 1}: {e.Message}"));
+                        if (result.Errors.Count() > 5)
+                            errorDetails += "\n• ...и другие";
+
+                        resultMessage.AppendLine("\n📝 Детали ошибок:");
+                        resultMessage.AppendLine(errorDetails);
+                    }
+
+                    measurementSuccess = result.CreatedCount > 0 || result.SkippedCount == 0; // считаем успехом, если нет ошибок
+                }
+                else
                 {
-                    var errorDetails = string.Join("\n", result.Errors.Take(5).Select(e =>
-                        $"• Запись #{e.Index + 1}: {e.Message}"));
-                    if (result.Errors.Count() > 5)
-                        errorDetails += "\n• ...и другие";
-
-                    message.AppendLine("\n📝 Детали ошибок:");
-                    message.AppendLine(errorDetails);
+                    resultMessage.AppendLine("❌ Ошибка сети при отправке замеров");
+                    measurementSuccess = false;
                 }
+            }
 
-                await Shell.Current.DisplayAlert("Результат выгрузки", message.ToString(), "OK");
+            // Итоговое сообщение
+            if (uploadedUnloads > 0 || resultMessage.ToString().Contains("Успешно создано"))
+            {
+                resultMessage.Insert(0, "✅ Выгрузка выполнена.\n");
             }
             else
             {
-                await Shell.Current.DisplayAlert(
-                    "Ошибка сети",
-                    "Не удалось связаться с сервером или получить корректный ответ. Замеры сохранены локально.",
-                    "OK");
+                resultMessage.Insert(0, "⚠️ Выгрузка завершена с ошибками.\n");
             }
+
+            if (failedUnloads > 0)
+                resultMessage.AppendLine($"\n⚠️ Не удалось отправить {failedUnloads} разгрузок (они останутся локально)");
+
+            await Shell.Current.DisplayAlert("Результат выгрузки", resultMessage.ToString(), "OK");
         }
         catch (Exception ex)
         {

@@ -104,6 +104,21 @@ public class ApiService : IApiService
         }
     }
 
+    public async Task<bool> UnloadVehicleAsync(Guid vehicleId, UnloadVehicleRequest request)
+    {
+        try
+        {
+            var url = $"api/v1/vehicles/{vehicleId}/unload";
+            var response = await _httpClient.PostAsJsonAsync(url, request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при вызове UnloadVehicle для {VehicleId}", vehicleId);
+            return false;
+        }
+    }
+
     /// <summary>
     /// Фейковые данные для тестирования.
     /// </summary>

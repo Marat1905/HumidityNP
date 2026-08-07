@@ -40,6 +40,8 @@ public static class MauiProgram
         builder.Services.AddTransient<VehiclesViewModel>();
         builder.Services.AddTransient<VehicleMeasurementsViewModel>();
         builder.Services.AddTransient<AllMeasurementsViewModel>();
+        builder.Services.AddTransient<UnloadViewModel>();
+        builder.Services.AddTransient<AllUnloadsViewModel>();
 
         // Страницы
         builder.Services.AddTransient<AppShell>();
@@ -47,6 +49,8 @@ public static class MauiProgram
         builder.Services.AddTransient<VehiclesPage>();
         builder.Services.AddTransient<VehicleMeasurementsPage>();
         builder.Services.AddTransient<AllMeasurementsPage>();
+        builder.Services.AddTransient<UnloadPage>();
+        builder.Services.AddTransient<AllUnloadsPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

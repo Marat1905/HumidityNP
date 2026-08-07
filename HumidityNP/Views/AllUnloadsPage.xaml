@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HumidityNP.Views.AllUnloadsPage"
+             Title="📦 Разгрузки"
+             x:Name="page">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Стиль для карточки -->
+            <Style x:Key="UnloadCard" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#2A2A3A}" />
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="Padding" Value="14" />
+                <Setter Property="Margin" Value="12,4" />
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BorderColor" Value="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="{AppThemeBinding Light=#E3F2FD, Dark=#1A1A2E}" Offset="0" />
+                <GradientStop Color="{AppThemeBinding Light=#BBDEFB, Dark=#16213E}" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок с количеством -->
+        <Grid Grid.Row="0" Margin="16,12,16,8" ColumnDefinitions="*,Auto">
+            <Label Grid.Column="0" Text="📦 Сохранённые разгрузки" FontSize="18" FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" VerticalOptions="Center" />
+            <Frame Grid.Column="1" BackgroundColor="{AppThemeBinding Light=#E8EAF6, Dark=#303F9F}"
+                   CornerRadius="12" Padding="8,3" HasShadow="False">
+                <Label Text="{Binding Unloads.Count, StringFormat='{0} шт.'}"
+                       TextColor="{AppThemeBinding Light=#1A237E, Dark=#90CAF9}"
+                       FontSize="12" FontAttributes="Bold" />
+            </Frame>
+        </Grid>
+
+        <!-- Список разгрузок -->
+        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Unloads}" SelectionMode="None">
+
+                <CollectionView.EmptyView>
+                    <Grid VerticalOptions="Center" HorizontalOptions="Center" Padding="40">
+                        <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <Label Text="📦" FontSize="50" HorizontalOptions="Center" />
+                            <Label Text="Нет сохранённых разгрузок" FontSize="16" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" HorizontalOptions="Center" />
+                            <Label Text="Разгрузки появятся после сохранения" FontSize="13"
+                                   TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <!-- Кнопка редактирования (карандаш) -->
+                                    <SwipeItem Text="✏️ Редактировать"
+                                               BackgroundColor="#2196F3"
+                                               Command="{Binding BindingContext.EditUnloadCommand, Source={x:Reference page}}"
+                                               CommandParameter="{Binding .}" />
+                                    <!-- Кнопка удаления (корзина) -->
+                                    <SwipeItem Text="🗑️ Удалить"
+                                               BackgroundColor="#D32F2F"
+                                               Command="{Binding BindingContext.DeleteUnloadCommand, Source={x:Reference page}}"
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Frame Style="{StaticResource UnloadCard}">
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="4">
+
+                                    <!-- Иконка -->
+                                    <Frame Grid.Row="0" Grid.RowSpan="5" Grid.Column="0"
+                                           WidthRequest="44" HeightRequest="44"
+                                           CornerRadius="22"
+                                           BackgroundColor="{AppThemeBinding Light=#FFF3E0, Dark=#4E342E}"
+                                           HasShadow="False" Padding="0" VerticalOptions="Center">
+                                        <Label Text="📦" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Frame>
+
+                                    <!-- Номер машины -->
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding VehicleDisplayInfo}" FontSize="16" FontAttributes="Bold"
+                                           TextColor="{AppThemeBinding Light=#1A237E, Dark=#90CAF9}" />
+
+                                    <!-- Дата сохранения -->
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding LocalTimestamp, StringFormat='🕐 {0:dd.MM.yyyy HH:mm}'}"
+                                           FontSize="12" TextColor="{AppThemeBinding Light=#757575, Dark=#78909C}" />
+
+                                    <!-- Тюки -->
+                                    <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto,*">
+                                        <Label Grid.Column="0" Text="Тюки:" FontSize="13" TextColor="{AppThemeBinding Light=#616161, Dark=#B0BEC5}" />
+                                        <Label Grid.Column="1" Text="{Binding BaleCount}" FontSize="13" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" HorizontalOptions="End" />
+                                    </Grid>
+
+                                    <!-- Порванные -->
+                                    <Grid Grid.Row="3" Grid.Column="1" ColumnDefinitions="Auto,*">
+                                        <Label Grid.Column="0" Text="Порванных:" FontSize="13" TextColor="{AppThemeBinding Light=#616161, Dark=#B0BEC5}" />
+                                        <Label Grid.Column="1" Text="{Binding DamagedBaleCount}" FontSize="13" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light=#D32F2F, Dark=#EF9A9A}" HorizontalOptions="End" />
+                                    </Grid>
+
+                                    <!-- Вес и штабель -->
+                                    <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,*">
+                                        <Label Grid.Column="0" Text="{Binding WeightKg, StringFormat='Вес: {0:F1} кг'}" FontSize="12"
+                                               TextColor="{AppThemeBinding Light=#616161, Dark=#B0BEC5}" />
+                                        <Label Grid.Column="1" Text="{Binding StackNumber, StringFormat='Штабель: {0}'}" FontSize="12"
+                                               TextColor="{AppThemeBinding Light=#616161, Dark=#B0BEC5}" HorizontalOptions="End" />
+                                    </Grid>
+
+                                    <!-- Значок статуса выгрузки -->
+                                    <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="2"
+                                           Text="⏳" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center"
+                                           IsVisible="{Binding IsUploaded, Converter={StaticResource InverseBoolConverter}}" />
+                                    <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="2"
+                                           Text="✅" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center"
+                                           IsVisible="{Binding IsUploaded}" />
+                                </Grid>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

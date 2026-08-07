@@ -13,6 +13,9 @@ public partial class AppShell : Shell
         // Регистрируем маршрут для страницы замеров конкретной машины
         Routing.RegisterRoute("vehiclemeasurements", typeof(VehicleMeasurementsPage));
 
+        // Маршрут для страницы разгрузки
+        Routing.RegisterRoute("unload", typeof(UnloadPage));
+
         // Устанавливаем правильный текст кнопки при старте
         UpdateThemeText();
     }

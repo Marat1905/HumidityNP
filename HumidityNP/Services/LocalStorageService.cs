@@ -28,12 +28,13 @@ public class LocalStorageService : ILocalStorageService
 
         _db = new SQLiteAsyncConnection(_dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.SharedCache);
         await _db.CreateTableAsync<HumidityMeasurement>();
+        await _db.CreateTableAsync<UnloadInfo>();
     }
 
     public async Task SaveMeasurementAsync(HumidityMeasurement measurement)
     {
         await EnsureDbAsync();
-        measurement.LocalId = 0; // сброс для AutoIncrement
+        measurement.LocalId = 0;
         await _db!.InsertAsync(measurement);
     }
 
@@ -96,6 +97,49 @@ public class LocalStorageService : ILocalStorageService
         {
             return new List<Vehicle>();
         }
+    }
+
+    // ---------- МЕТОДЫ ДЛЯ РАЗГРУЗКИ ----------
+
+    public async Task SaveUnloadInfoAsync(UnloadInfo unload)
+    {
+        await EnsureDbAsync();
+        unload.LocalId = 0;
+        await _db!.InsertAsync(unload);
+    }
+
+    public async Task<UnloadInfo?> GetUnloadInfoByVehicleAsync(string vehicleId)
+    {
+        await EnsureDbAsync();
+        return await _db!.Table<UnloadInfo>()
+            .FirstOrDefaultAsync(u => u.VehicleId == vehicleId);
+    }
+
+    public async Task<UnloadInfo?> GetUnloadInfoByLocalIdAsync(int localId)
+    {
+        await EnsureDbAsync();
+        return await _db!.Table<UnloadInfo>()
+            .FirstOrDefaultAsync(u => u.LocalId == localId);
+    }
+
+    public async Task DeleteUnloadInfoAsync(int localId)
+    {
+        await EnsureDbAsync();
+        await _db!.DeleteAsync<UnloadInfo>(localId);
+    }
+
+    public async Task DeleteUnloadInfoForVehicleAsync(string vehicleId)
+    {
+        await EnsureDbAsync();
+        var info = await GetUnloadInfoByVehicleAsync(vehicleId);
+        if (info != null)
+            await DeleteUnloadInfoAsync(info.LocalId);
+    }
+
+    public async Task<List<UnloadInfo>> GetAllUnloadInfosAsync()
+    {
+        await EnsureDbAsync();
+        return await _db!.Table<UnloadInfo>().ToListAsync();
     }
 
     private async Task EnsureDbAsync()

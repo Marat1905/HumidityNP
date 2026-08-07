@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HumidityNP.Views.UnloadPage"
+             Title="📦 Разгрузка"
+             x:Name="page">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="CardFrame" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#2A2A3A}" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="Padding" Value="16" />
+                <Setter Property="Margin" Value="12,8" />
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BorderColor" Value="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" />
+            </Style>
+
+            <Style x:Key="SaveButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#FF9800" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="CornerRadius" Value="25" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="Padding" Value="16,0" />
+                <Setter Property="HorizontalOptions" Value="Fill" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="{AppThemeBinding Light=#E3F2FD, Dark=#1A1A2E}" Offset="0" />
+                <GradientStop Color="{AppThemeBinding Light=#BBDEFB, Dark=#16213E}" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <ScrollView Padding="12,8">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- Информация о машине -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="🚛 Информация о машине" FontSize="16" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#0D47A1, Dark=#64B5F6}" />
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto">
+                            <Label Grid.Row="0" Grid.Column="0" Text="Номер:" FontSize="14" TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding VehicleNumber}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="Марка/Госномер:" FontSize="14" TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding VehicleDisplayName}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="Контрагент:" FontSize="14" TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Counterparty}" FontSize="14" TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Форма ввода разгрузки -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label Text="📝 Данные разгрузки" FontSize="16" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#E65100, Dark=#FFA726}" />
+
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#3A3A4A}" />
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Тюки (шт):" FontSize="14" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Entry Grid.Column="1" Text="{Binding BaleCount}" Keyboard="Numeric"
+                                   Placeholder="Количество тюков" FontSize="14"
+                                   TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Порванных:" FontSize="14" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Entry Grid.Column="1" Text="{Binding DamagedBaleCount}" Keyboard="Numeric"
+                                   Placeholder="Количество порванных" FontSize="14"
+                                   TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Вес (кг):" FontSize="14" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Entry Grid.Column="1" Text="{Binding WeightKg}" Keyboard="Numeric"
+                                   Placeholder="Вес в килограммах" FontSize="14"
+                                   TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Штабель:" FontSize="14" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light=#424242, Dark=#B0BEC5}" />
+                            <Entry Grid.Column="1" Text="{Binding StackNumber}"
+                                   Placeholder="Номер штабеля" FontSize="14"
+                                   TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" />
+                        </Grid>
+
+                        <Button Style="{StaticResource SaveButtonStyle}"
+                                Text="💾 Сохранить разгрузку"
+                                Command="{Binding SaveUnloadCommand}" />
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -11,6 +11,11 @@ using System.Windows.Input;
 
 namespace HumidityNP.ViewModels;
 
+/// <summary>
+/// ViewModel для страницы замеров конкретной машины.
+/// Отвечает за отображение информации о машине, данных с BLE-датчика,
+/// списка замеров, а также предоставляет навигацию на страницу разгрузки.
+/// </summary>
 public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposable
 {
     private readonly IBleService _bleService;
@@ -89,6 +94,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
     public ICommand DeleteMeasurementCommand { get; }
     public ICommand ConnectCommand { get; }
     public ICommand CaptureReadingCommand { get; }
+    public ICommand NavigateToUnloadCommand { get; }
 
     public VehicleMeasurementsViewModel(IBleService bleService, ILocalStorageService localStorage)
     {
@@ -100,6 +106,7 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
         DeleteMeasurementCommand = new AsyncRelayCommand<HumidityMeasurement>(DeleteMeasurementAsync);
         ConnectCommand = new AsyncRelayCommand(ConnectAsync);
         CaptureReadingCommand = new AsyncRelayCommand(CaptureReadingAsync);
+        NavigateToUnloadCommand = new AsyncRelayCommand(NavigateToUnloadAsync);
 
         // Подписку на события BLE вынесли из конструктора в отдельный метод,
         // чтобы можно было подписываться/отписываться при появлении/исчезновении страницы.
@@ -349,6 +356,20 @@ public partial class VehicleMeasurementsViewModel : ObservableObject, IDisposabl
             await _bleService.DisconnectAsync();
         else
             _ = _bleService.StartAutoConnectAsync();
+    }
+
+    /// <summary>
+    /// Переход на страницу ввода/редактирования разгрузки для текущей машины.
+    /// </summary>
+    private async Task NavigateToUnloadAsync()
+    {
+        if (string.IsNullOrEmpty(VehicleId))
+        {
+            await Shell.Current.DisplayAlert("Ошибка", "Не выбрана машина", "OK");
+            return;
+        }
+
+        await Shell.Current.GoToAsync($"unload?vehicleId={VehicleId}");
     }
 
     public void Dispose()
