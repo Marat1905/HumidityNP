@@ -110,7 +110,14 @@ public class ApiService : IApiService
         {
             var url = $"api/v1/vehicles/{vehicleId}/unload";
             var response = await _httpClient.PostAsJsonAsync(url, request);
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+                return true;
+
+            // Читаем тело ошибки для диагностики
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Ошибка при вызове UnloadVehicle для {VehicleId}: {StatusCode}, {Error}",
+                vehicleId, response.StatusCode, errorContent);
+            return false;
         }
         catch (Exception ex)
         {

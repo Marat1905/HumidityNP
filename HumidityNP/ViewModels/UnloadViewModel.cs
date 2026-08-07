@@ -159,6 +159,7 @@ public partial class UnloadViewModel : ObservableObject
     /// Сохраняет разгрузку локально.
     /// Если _editingLocalId > 0, обновляет существующую запись (удаляет старую, создаёт новую с тем же VehicleId).
     /// Иначе создаёт новую.
+    /// Добавлена логика: пустые поля трактуются как 0; если порванных > 0, вес должен быть > 0.
     /// </summary>
     private async Task SaveUnloadAsync()
     {
@@ -168,22 +169,33 @@ public partial class UnloadViewModel : ObservableObject
             return;
         }
 
-        // Парсинг введённых значений
-        if (!int.TryParse(BaleCount, out int baleCount) || baleCount < 0)
+        // Парсинг введённых значений: пустые строки заменяем на "0"
+        string baleText = string.IsNullOrWhiteSpace(BaleCount) ? "0" : BaleCount.Trim();
+        string damagedText = string.IsNullOrWhiteSpace(DamagedBaleCount) ? "0" : DamagedBaleCount.Trim();
+        string weightText = string.IsNullOrWhiteSpace(WeightKg) ? "0" : WeightKg.Trim();
+
+        if (!int.TryParse(baleText, out int baleCount) || baleCount < 0)
         {
             await Shell.Current.DisplayAlert("Ошибка", "Введите корректное количество тюков (целое неотрицательное число)", "OK");
             return;
         }
 
-        if (!int.TryParse(DamagedBaleCount, out int damagedCount) || damagedCount < 0)
+        if (!int.TryParse(damagedText, out int damagedCount) || damagedCount < 0)
         {
             await Shell.Current.DisplayAlert("Ошибка", "Введите корректное количество порванных тюков (целое неотрицательное число)", "OK");
             return;
         }
 
-        if (!double.TryParse(WeightKg, out double weight) || weight < 0)
+        if (!double.TryParse(weightText, out double weight) || weight < 0)
         {
             await Shell.Current.DisplayAlert("Ошибка", "Введите корректный вес (неотрицательное число)", "OK");
+            return;
+        }
+
+        // Дополнительная проверка: если есть порванные тюки, вес должен быть больше 0
+        if (damagedCount > 0 && weight == 0)
+        {
+            await Shell.Current.DisplayAlert("Предупреждение", "Если есть порванные тюки, вес должен быть больше 0. Укажите вес.", "OK");
             return;
         }
 
