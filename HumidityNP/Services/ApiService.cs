@@ -26,7 +26,7 @@ public class ApiService : IApiService
         try
         {
             // Обращаемся к новому эндпоинту без пагинации
-            var url = "api/v1/vehicles/active/all";
+            var url = "humidity/api/v1/vehicles/active/all";
 
             // Сервер вернет массив JSON, который десериализуется напрямую в List<Vehicle>
             var response = await _httpClient.GetFromJsonAsync<List<Vehicle>>(url);
@@ -36,9 +36,9 @@ public class ApiService : IApiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при получении списка активных машин с API");
-
+            return default(List<Vehicle>);
             // Возвращаем фейковые данные при ошибке сети, чтобы не ломать UI во время отладки
-            return GetFakeVehicles();
+            //return GetFakeVehicles();
         }
     }
 
@@ -80,7 +80,7 @@ public class ApiService : IApiService
                 };
             }
 
-            var url = "api/v1/measurements/bulk";
+            var url = "humidity/api/v1/measurements/bulk";
             var json = JsonSerializer.Serialize(requests);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -108,7 +108,7 @@ public class ApiService : IApiService
     {
         try
         {
-            var url = $"api/v1/vehicles/{vehicleId}/unload";
+            var url = $"humidity/api/v1/vehicles/{vehicleId}/unload";
             var response = await _httpClient.PostAsJsonAsync(url, request);
             if (response.IsSuccessStatusCode)
                 return true;

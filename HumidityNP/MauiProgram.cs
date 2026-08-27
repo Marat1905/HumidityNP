@@ -1,4 +1,5 @@
-﻿using HumidityNP.Services;
+﻿using CommunityToolkit.Maui;
+using HumidityNP.Services;
 using HumidityNP.ViewModels;
 using HumidityNP.Views;
 using MauiIcons.Material;
@@ -14,6 +15,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .UseSkiaSharp()
             .UseMaterialMauiIcons()
             .ConfigureFonts(fonts =>
@@ -29,7 +31,7 @@ public static class MauiProgram
             // Для Android эмулятора: http://10.0.2.2:<порт_вашего_api> (например, 5000 или 7000)
             // Для iOS эмулятора: http://localhost:<порт_вашего_api>
             // Для реального физического устройства: http://<IP-адрес_компьютера_в_локальной_сети>:<порт>
-            client.BaseAddress = new Uri("http://192.168.88.88:5000");
+            client.BaseAddress = new Uri("http://10.93.2.95:30006");
         });
 
         // Сервисы

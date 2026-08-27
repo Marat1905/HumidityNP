@@ -1,7 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HumidityNP.Models;
 using HumidityNP.Services;
+using HumidityNP.Utils;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -115,7 +118,7 @@ public partial class VehiclesViewModel : ObservableObject
         IsRefreshing = true;
         try
         {
-            // Сначала показываем данные из кеша (быстрый отклик)
+            // 1. Быстрый показ кеша
             var cached = await _localStorage.GetCachedVehiclesAsync();
             if (cached.Any())
             {
@@ -123,19 +126,33 @@ public partial class VehiclesViewModel : ObservableObject
                 ApplyFilter();
             }
 
-            // Затем загружаем свежие данные с API
+            // 2. Запрос к API
             var fresh = await _apiService.GetActiveVehiclesAsync();
-            if (fresh.Any())
+            if (fresh != null) // Успешный ответ (может быть пустым)
             {
-                // Сохраняем в кеш
+                // Сохраняем в кеш даже пустой список
                 await _localStorage.SaveVehiclesAsync(fresh);
                 _allVehicles = fresh.ToList();
                 ApplyFilter();
+
+                // Если пришёл пустой список, а раньше были машины – уведомим
+                if (!fresh.Any())
+                {
+                    await ToastHelper.ShowInfoAsync("На сервере нет активных машин.");
+                }
             }
+            else
+            {
+                // Показываем Toast об ошибке
+                await ToastHelper.ShowErrorAsync("Не удалось обновить список машин. Показаны сохранённые данные.");
+            }
+            // Если fresh == null – ошибка сети, оставляем кеш
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Ошибка загрузки машин: {ex.Message}");
+            // Показываем Toast об ошибке
+            await ToastHelper.ShowErrorAsync("Не удалось обновить список машин. Показаны сохранённые данные.");
         }
         finally
         {
